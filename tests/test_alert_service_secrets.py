@@ -6,8 +6,6 @@ return anything.  They do not exercise message sending or the event
 loop, as those require integration tests with Slack or Teams.
 """
 
-import os
-import sys
 import asyncio
 
 import pytest  # type: ignore
@@ -34,7 +32,9 @@ def test_alert_service_env_fallback(monkeypatch):
     monkeypatch.setenv("SLACK_BOT_TOKEN", "xoxb-test-token")
     monkeypatch.setenv("SLACK_CHANNEL_ID", "C12345")
     # Create service
-    service = AlertService(event_bus=DummyEventBus({"daily_pnl": -20, "kill_switch": False}))
+    service = AlertService(
+        event_bus=DummyEventBus({"daily_pnl": -20, "kill_switch": False})
+    )
     # Config should be loaded from env
     assert service.enabled is True
     assert service.pnl_threshold == 10.0
@@ -50,8 +50,10 @@ async def test_alert_service_teams(monkeypatch):
     monkeypatch.setenv("ALERT_ENABLE", "true")
     monkeypatch.setenv("TEAMS_WEBHOOK_URL", "https://example.com/webhook")
     # Ensure requests import fails to force logging fallback
-    monkeypatch.setitem(sys.modules, "requests", None)
-    service = AlertService(event_bus=DummyEventBus({"kill_switch": True, "daily_pnl": -5}))
+    monkeypatch.setattr("workers.src.workers.services.alert_service.requests", None)
+    service = AlertService(
+        event_bus=DummyEventBus({"kill_switch": True, "daily_pnl": -5})
+    )
     # Should read TEAMS_WEBHOOK_URL
     assert service.teams_webhook == "https://example.com/webhook"
     # run run() once to process message; it should not raise

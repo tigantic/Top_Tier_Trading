@@ -8,15 +8,9 @@ returns.  When the volatility window or multiplier is zero, the
 band check is disabled.
 """
 
-import os
-import sys
 import pytest
-import asyncio
 
-# Adjust sys.path so that tests can import the workers modules without installing the package.
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "workers", "src")))
-
-from workers.services.risk_service import RiskService  # type: ignore
+from workers.src.workers.services.risk_service import RiskService  # type: ignore
 
 
 @pytest.mark.asyncio
@@ -83,6 +77,7 @@ async def test_atr_band_rejects_large_deviation(monkeypatch) -> None:
     """ATR-based volatility bands should reject prices far outside the band."""
     # Configure ATR method and window
     monkeypatch.setenv("ATR_WINDOW", "3")
+    monkeypatch.setenv("VOLATILITY_WINDOW", "3")
     monkeypatch.setenv("VOLATILITY_METHOD", "atr")
     monkeypatch.setenv("VOLATILITY_MULT", "1.0")
     # Use permissive caps so only band check matters
@@ -113,6 +108,7 @@ async def test_atr_band_rejects_large_deviation(monkeypatch) -> None:
 async def test_atr_band_allows_small_deviation(monkeypatch) -> None:
     """ATR-based volatility bands should allow prices within the band."""
     monkeypatch.setenv("ATR_WINDOW", "3")
+    monkeypatch.setenv("VOLATILITY_WINDOW", "3")
     monkeypatch.setenv("VOLATILITY_METHOD", "atr")
     monkeypatch.setenv("VOLATILITY_MULT", "1.0")
     monkeypatch.setenv("MAX_ORDER_NOTIONAL", "100000")

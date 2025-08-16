@@ -83,7 +83,7 @@ To exercise the code path locally:
 
 ```bash
 export USE_OFFICIAL_SDK=true
-python scripts/sdk_integration_test.py
+python scripts/sdk_integration_harness.py
 ```
 
 This harness initialises both the market data and user channel clients and prints any events.  In offline environments you will only see the log message indicating that no data is being produced.
@@ -104,3 +104,4 @@ In a production environment with network access and the `coinbase-advanced-py` p
 3. **Update wrappers**: Replace stubbed sections with real SDK logic.
 4. **Deploy**: Restart the worker services and verify that they start consuming from the SDK.  Check the logs for any errors.
 5. **Validate parity**: Run the integration test suite to ensure that the event schema matches the expectations and that toggling `USE_OFFICIAL_SDK` behaves correctly.
+
