@@ -24,7 +24,7 @@ from typing import Any
 # Import normalisation helper for user updates.  This validates and converts
 # message fields before publishing to the event bus.  See
 # ``workers/src/workers/models_events.py`` for schema details.
-from .models_events import normalize_user_update_event, UserUpdateEvent  # type: ignore
+from .models_events import UserUpdateEvent  # type: ignore
 from .services.publishers import publish_user_update  # type: ignore
 
 try:
@@ -66,7 +66,13 @@ async def start() -> None:
         passphrase = os.getenv("COINBASE_PASSPHRASE", "")
         sandbox = os.getenv("USE_STATIC_SANDBOX", "true").lower() in {"true", "1", "yes"}
         # Pass event_bus into the SDK wrapper
-        client = UserChannelClient(api_key=api_key, api_secret=api_secret, passphrase=passphrase or None, sandbox=sandbox, event_bus=event_bus)
+        client = UserChannelClient(
+            api_key=api_key,
+            api_secret=api_secret,
+            passphrase=passphrase or None,
+            sandbox=sandbox,
+            event_bus=event_bus,
+        )
         logger.info("User channel worker using Coinbase SDK wrapper (sandbox=%s)", sandbox)
         async for msg in client.stream():
             # Normalise and publish via helper; skip invalid messages
@@ -111,4 +117,3 @@ async def start() -> None:
             await ws.close()
             if 'refresh_task' in locals():
                 refresh_task.cancel()
-

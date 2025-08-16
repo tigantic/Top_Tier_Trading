@@ -8,8 +8,8 @@ yielding no data without raising exceptions.
 import asyncio
 import pytest  # type: ignore
 
-from workers.src.workers.clients.sdk_market_data import MarketDataClient
-from workers.src.workers.clients.sdk_user_channel import UserChannelClient
+from workers.clients.sdk_market_data import MarketDataClient
+from workers.clients.sdk_user_channel import UserChannelClient
 
 
 @pytest.mark.asyncio  # type: ignore

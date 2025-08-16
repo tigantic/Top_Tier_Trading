@@ -81,11 +81,6 @@ async def start_workers() -> None:
         except Exception:
             state_store = None
 
-    # Inject the event bus into the risk service so that exposure and PnL
-    # updates can be published for real‑time monitoring.  When ``event_bus`` is
-    # None the risk service operates silently.
-    risk_service = RiskService(state_store=state_store, event_bus=event_bus)
-
     # Choose event bus implementation.  Preference order:
     # 1. RabbitMQ if RABBITMQ_HOST is set
     # 2. Redis if REDIS_HOST is set
@@ -122,6 +117,11 @@ async def start_workers() -> None:
         if event_bus is None:
             event_bus = EventBus()
 
+    # Inject the event bus into the risk service so that exposure and PnL
+    # updates can be published for real‑time monitoring.  When ``event_bus`` is
+    # None the risk service operates silently.
+    risk_service = RiskService(state_store=state_store, event_bus=event_bus)
+
     # Choose the REST client implementation.  When the environment
     # variable USE_OFFICIAL_SDK is set to ``true`` the worker will
     # attempt to construct an instance of OfficialRestClient from the
@@ -138,11 +138,13 @@ async def start_workers() -> None:
     try:
         from .secrets_manager import get_default_secrets_manager  # type: ignore
         secrets_manager = get_default_secrets_manager()
+
         def get_secret(name: str) -> str:
             val = secrets_manager.get_secret(name)
             return val or ""
     except Exception:
         # Fallback to direct environment lookup
+
         def get_secret(name: str) -> str:
             return os.getenv(name, "")
     if use_official:
@@ -163,10 +165,18 @@ async def start_workers() -> None:
             passphrase = get_secret("COINBASE_PASSPHRASE") or get_secret("COINBASE_API_PASSPHRASE")
             # Determine sandbox mode from USE_STATIC_SANDBOX (true by default)
             sandbox = os.getenv("USE_STATIC_SANDBOX", "true").lower() in {"true", "1", "yes"}
-            http_client = OfficialRestClient(api_key=api_key, api_secret=api_secret, passphrase=passphrase, sandbox=sandbox)
+            http_client = OfficialRestClient(
+                api_key=api_key,
+                api_secret=api_secret,
+                passphrase=passphrase,
+                sandbox=sandbox,
+            )
             logging.info("Initialized OfficialRestClient (sandbox=%s)", sandbox)
         except Exception as exc:
-            logging.error("Failed to initialize OfficialRestClient, falling back to HttpExchangeClient: %s", exc)
+            logging.error(
+                "Failed to initialize OfficialRestClient, falling back to HttpExchangeClient: %s",
+                exc,
+            )
             http_client = None
     if http_client is None:
         try:

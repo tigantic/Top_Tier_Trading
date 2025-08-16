@@ -14,7 +14,10 @@ import asyncio
 
 import pytest  # type: ignore
 
-from scripts import ops_bot_async
+try:  # pragma: no cover - dependency optional in tests
+    from scripts import ops_bot_async
+except SystemExit:  # slack_bolt missing
+    pytest.skip("slack_bolt not installed", allow_module_level=True)
 
 
 @pytest.mark.asyncio  # type: ignore

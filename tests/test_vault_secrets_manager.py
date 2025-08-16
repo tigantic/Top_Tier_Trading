@@ -6,7 +6,7 @@ VaultSecretsManager falls back to reading from environment variables.
 
 import os
 
-from workers.src.workers.secrets_manager import VaultSecretsManager
+from workers.secrets_manager import VaultSecretsManager
 
 
 def test_vault_fallback(monkeypatch):

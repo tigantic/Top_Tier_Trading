@@ -7,7 +7,7 @@ exercise the variance calculation.  Because the GARCH estimator in
 offline mode uses heuristics, we only assert structural properties.
 """
 
-from trading_platform.workers.src.workers.risk.garch import estimate_garch_parameters
+from workers.risk.garch import estimate_garch_parameters
 
 
 def test_garch_stub_returns_dict() -> None:

@@ -8,7 +8,7 @@ behaviour of the strategy.
 
 import math
 
-from workers.src.workers.strategies.deep_q_network_strategy import DeepQNetworkStrategy
+from workers.strategies.deep_q_network_strategy import DeepQNetworkStrategy
 
 
 class DummyBus:

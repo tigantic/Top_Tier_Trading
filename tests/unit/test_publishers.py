@@ -13,7 +13,7 @@ from __future__ import annotations
 import asyncio
 import pytest  # type: ignore
 
-from workers.src.workers.services.publishers import (
+from workers.services.publishers import (
     publish_ticker,
     publish_user_update,
 )
