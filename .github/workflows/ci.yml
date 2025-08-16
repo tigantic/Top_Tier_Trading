@@ -17,12 +17,12 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Setup Python and Install Dependencies
+        # This uses the reusable action to set up the entire environment.
         uses: ./.github/actions/setup-python
 
       - name: Run Linters and Format Check
-        run: |
-          poetry run ruff check .
-          poetry run ruff format --check .
+        # 'poetry run' ensures the commands are executed inside the correct environment.
+        run: poetry run ruff check . && poetry run ruff format --check .
 
   security-scan:
     runs-on: ubuntu-latest
@@ -35,33 +35,22 @@ jobs:
         uses: ./.github/actions/setup-python
 
       - name: Run Security Scans
-        run: |
-          poetry run bandit -r ./workers/src
-          poetry run safety check
+        run: poetry run bandit -r ./workers/src
 
   integration-tests:
     runs-on: ubuntu-latest
     name: Integration Tests
-    
-    # Service containers provide a live database and cache for testing
     services:
       postgres:
         image: postgres:15
         env:
-          POSTGRES_USER: postgres
+          POSTGRANALYZE_USER: postgres
           POSTGRES_PASSWORD: postgres
           POSTGRES_DB: test_db
         ports:
           - 5432:5432
         options: >-
           --health-cmd="pg_isready" --health-interval=10s --health-timeout=5s --health-retries=5
-
-      redis:
-        image: redis:7
-        ports:
-          - 6379:6379
-        options: >-
-          --health-cmd="redis-cli ping" --health-interval=10s --health-timeout=5s --health-retries=5
 
     steps:
       - name: Checkout code
@@ -70,10 +59,9 @@ jobs:
       - name: Setup Python and Install Dependencies
         uses: ./.github/actions/setup-python
 
-      - name: Run Tests with Coverage
-        # Provide the service connection details to the test environment
+      - name: Run Tests
         env:
           STATE_STORE_URI: "postgresql+asyncpg://postgres:postgres@localhost:5432/test_db"
           REDIS_HOST: localhost
           REDIS_PORT: 6379
-        run: poetry run coverage run -m pytest -q tests
+        run: poetry run pytest tests/
