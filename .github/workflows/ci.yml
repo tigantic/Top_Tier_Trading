@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.11"] # Using a current Python version
+        python-version: ["3.11"]
 
     steps:
       - name: Checkout code
@@ -24,21 +24,25 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Install dependencies
+      - name: Install Poetry
         run: |
           python -m pip install --upgrade pip
-          # Assuming a move to poetry as per pyproject.toml
           pip install poetry
-          poetry install
+
+      - name: Set up Python environment
+        run: |
+          poetry env use ${{ matrix.python-version }}
+          
+      - name: Install dependencies
+        run: |
+          # Use --no-root to install only dependencies, not the project package itself.
+          poetry install --no-root
 
       - name: Set PYTHONPATH
-        # This step makes the project root available for imports,
-        # resolving ModuleNotFoundError for 'workers', 'scripts', etc.
         run: echo "PYTHONPATH=$(pwd)" >> $GITHUB_ENV
 
       - name: Run tests with coverage
         run: |
-          # The test path is also corrected to 'tests/'
           poetry run coverage run -m pytest -q tests
           poetry run coverage xml -o coverage.xml
 
