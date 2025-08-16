@@ -27,11 +27,11 @@ This directory contains utility scripts for development, testing and operations.
     --fields event_type,timestamp,product_id,side,size,price
   ```
 
-* **sdk_integration_test.py** – Harness that initialises the SDK market data and user channel clients concurrently.  This script exercises the stubs when offline and can be used to verify that event bus publishing works correctly.  Run with:
+* **sdk_integration_harness.py** – Harness that initialises the SDK market data and user channel clients concurrently.  This script exercises the stubs when offline and can be used to verify that event bus publishing works correctly.  Run with:
 
   ```bash
   export USE_OFFICIAL_SDK=true
-  python scripts/sdk_integration_test.py
+  python scripts/sdk_integration_harness.py
   ```
 
 ## Reinforcement Learning
