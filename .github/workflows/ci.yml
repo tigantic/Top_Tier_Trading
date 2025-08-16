@@ -25,13 +25,17 @@ jobs:
           python-version: ${{ matrix.python-version }}
           cache: 'poetry'
 
-      - name: Install dependencies
-        run: |
-          pip install poetry
-          # Installs all dependencies from pyproject.toml, including ruff
-          poetry install --no-root 
+      - name: Install Poetry
+        # This action handles the installation of Poetry and adds it to the PATH.
+        uses: snok/install-poetry@v1
+        with:
+          virtualenvs-create: true
+          virtualenvs-in-project: true
 
-      - name: Lint and Format Check with Ruff
+      - name: Install dependencies
+        run: poetry install --no-root --no-interaction --no-ansi
+
+      - name: Lint, Format, and Security Scan
         run: poetry run ruff format --check . && poetry run ruff check .
 
       - name: Run Tests with Coverage
