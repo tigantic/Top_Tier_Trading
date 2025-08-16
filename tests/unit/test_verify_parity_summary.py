@@ -11,7 +11,7 @@ from pathlib import Path
 
 import pytest  # type: ignore
 
-from trading_platform.scripts.verify_parity_summary import verify_parity_summary
+from scripts.verify_parity_summary import verify_parity_summary
 
 
 def test_verify_parity_summary_success(tmp_path: Path) -> None:
