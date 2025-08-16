@@ -9,58 +9,94 @@ on:
       - "*"
 
 jobs:
-  lint-and-format:
+  lint-and-security:
+    name: Lint, Format & Security Scan
     runs-on: ubuntu-latest
-    name: Lint & Format
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "poetry"
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+      - name: Install linting dependencies
+        run: poetry install --with lint --no-root
+      - name: Run Checks
+        run: |
+          poetry run ruff format --check .
+          poetry run ruff check .
+          poetry run bandit -r ./workers/src
+          poetry run safety check
+          poetry run mypy workers/src
+          poetry run poetry lock --check
 
-      - name: Setup Python and Install Dependencies
-        # This uses the local reusable action to set up the entire environment.
-        uses: ./.github/actions/setup-python
-
-      - name: Run Linters and Format Check
-        run: poetry run ruff check . && poetry run ruff format --check .
-
-  security-scan:
+  python-tests:
+    name: Python Tests
     runs-on: ubuntu-latest
-    name: Security Scan
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Python and Install Dependencies
-        uses: ./.github/actions/setup-python
-
-      - name: Run Security Scans
-        run: poetry run bandit -r ./workers/src
-
-  integration-tests:
-    runs-on: ubuntu-latest
-    name: Integration Tests
     services:
       postgres:
         image: postgres:15
-        env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: test_db
-        ports:
-          - 5432:5432
+        env: { POSTGRES_USER: postgres, POSTGRES_PASSWORD: postgres, POSTGRES_DB: test_db }
+        ports: ["5432:5432"]
         options: >-
           --health-cmd="pg_isready" --health-interval=10s --health-timeout=5s --health-retries=5
-
+      redis:
+        image: redis:7
+        ports: ["6379:6379"]
+        options: >-
+          --health-cmd="redis-cli ping" --health-interval=10s --health-timeout=5s --health-retries=5
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
-      - name: Setup Python and Install Dependencies
-        uses: ./.github/actions/setup-python
-
-      - name: Run Tests
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "poetry"
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+      - name: Install all dependencies
+        run: poetry install --with test,lint --no-root
+      - name: Run Tests with Coverage
         env:
           STATE_STORE_URI: "postgresql+asyncpg://postgres:postgres@localhost:5432/test_db"
           REDIS_HOST: localhost
           REDIS_PORT: 6379
-        run: poetry run pytest tests/
+        run: poetry run coverage run -m pytest -q tests
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage.xml
+
+  api-tests:
+    name: API (TypeScript) Tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./api
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+          cache: "npm"
+          cache-dependency-path: "api/package-lock.json"
+      - name: Install dependencies
+        run: npm ci
+      - name: Run Lint and Tests
+        run: npm run lint && npm run test
+
+  docker-build-verify:
+    name: Verify Docker Builds
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Build Docker images
+        run: docker-compose -f docker/docker-compose.yml build

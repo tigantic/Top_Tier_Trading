@@ -8,7 +8,7 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.11"
-# Core dependencies for workers and backtester
+# Core application runtime dependencies
 aiohttp = "^3.9.4"
 websockets = "^11.0.3"
 tenacity = "^8.2.3"
@@ -26,17 +26,24 @@ redis = "^4.5"
 aio-pika = "^9.1.0"
 slack-bolt = "^1.18.0"
 
-[tool.poetry.group.dev.dependencies]
+[tool.poetry.group.test]
+optional = true
+
+[tool.poetry.group.test.dependencies]
 pytest = "^7.4.0"
-flake8 = "^6.1.0"
-black = "^23.11.0"
-mypy = "^1.7.1"
-bandit = "^1.7.4"
 pytest-asyncio = "^0.21.0"
-# Vulnerability scanning tool for Python dependencies
-safety = "^2.3.5"
+coverage = "^7.5.0"
+
+[tool.poetry.group.lint]
+optional = true
+
+[tool.poetry.group.lint.dependencies]
+ruff = "^0.4.4"
+bandit = "^1.7.9"
+safety = "^3.2.3"
+mypy = "^1.10.0"
 alembic = "^1.13.1"
 
 [build-system]
-requires = ["poetry-core>=1.2.0"]
+requires = ["poetry-core>=1.2.0]
 build-backend = "poetry.core.masonry.api"
