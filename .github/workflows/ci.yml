@@ -26,8 +26,8 @@ jobs:
           cache: 'poetry'
 
       - name: Install Poetry
-        # This dedicated action correctly installs Poetry and adds it to the PATH
-        # for all subsequent steps in the job.
+        # This is the definitive fix. This action correctly installs Poetry
+        # and adds its executable to the PATH for all subsequent steps.
         uses: snok/install-poetry@v1
         with:
           virtualenvs-create: true
