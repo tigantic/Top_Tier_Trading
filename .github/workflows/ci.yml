@@ -26,17 +26,21 @@ jobs:
           cache: 'poetry'
 
       - name: Install Poetry
-        # This step uses a dedicated action to install Poetry and add it to the PATH.
+        # This step uses a dedicated action to install the Poetry executable
+        # and add it to the PATH for all subsequent steps.
         uses: snok/install-poetry@v1
         with:
           virtualenvs-create: true
           virtualenvs-in-project: true
-      
+
       - name: Install dependencies
         run: poetry install --no-root --no-interaction --no-ansi
 
       - name: Lint, Format, and Security Scan
-        run: poetry run ruff check . && poetry run ruff format --check .
+        run: |
+          poetry run ruff check .
+          poetry run ruff format --check .
+          poetry run bandit -r ./workers/src
 
       - name: Run Tests with Coverage
         run: poetry run coverage run -m pytest -q tests
