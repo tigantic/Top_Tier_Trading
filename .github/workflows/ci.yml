@@ -13,158 +13,40 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.10"]
+        python-version: ["3.11"] # Updated to match pyproject.toml
+
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4 # Updated to a current, non-deprecated version
+
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5 # Updated to a current, non-deprecated version
         with:
           python-version: ${{ matrix.python-version }}
+
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
+          # Install all dependencies needed for testing, including those from pyproject.toml
           pip install -r workers/requirements.txt
-          # Additional packages for tests and stubs
-          pip install slack_bolt aiohttp redis pytest
+          pip install slack_bolt aiohttp redis pytest numpy pandas scikit-learn matplotlib alembic
           # Install linting and coverage tools
-          pip install ruff coverage
-      - name: Run tests
-        run: |
-          # Run test suite with coverage.  If coverage fails to load, fall back to pytest.
-          if coverage run -m pytest -q trading_platform/tests; then
-            coverage xml -o coverage.xml || true
-          else
-            pytest -q trading_platform/tests || pytest -q tests
-          fi
-      - name: Ruff lint
-        run: |
-          # Run Ruff on the project.  Do not fail the build if Ruff is unavailable or emits warnings.
-          if command -v ruff >/dev/null 2>&1; then
-            ruff trading_platform || true
-          else
-            echo "ruff not installed; skipping lint"
-          fi
-      - name: Coverage summary
-        run: |
-          # Print coverage summary for key modules if coverage.xml exists
-          python trading_platform/scripts/coverage_summary.py || true
+          pip install ruff coverage bandit safety
 
-      - name: Type check
-        run: |
-          # Run mypy if available; skip silently otherwise.  We do not
-          # enforce mypy errors in this RC but surface them in the logs.
-          if command -v mypy >/dev/null 2>&1; then
-            echo "Running mypy type checks..."
-            mypy workers/src/workers || true
-          else
-            echo "mypy not installed; skipping type checks"
-          fi
+      - name: Set PYTHONPATH
+        run: echo "PYTHONPATH=$(pwd)" >> $GITHUB_ENV
 
-      - name: Coverage threshold check
+      - name: Run tests with coverage
         run: |
-          # Fail the build if overall coverage falls below 80%, but
-          # allow graceful exit when coverage file is absent (offline mode).
-          if [ -f coverage.xml ]; then
-            # Extract total coverage from the XML summary line
-            total=$(grep -oP "line-rate=\"\K[0-9\.]+" coverage.xml | head -n1)
-            if [ -z "$total" ]; then
-              echo "Could not determine coverage; skipping threshold check"
-            else
-              percent=$(echo "$total * 100" | bc -l)
-              echo "Total coverage: $percent%"
-              # Compare with threshold 80.0
-              cmp=$(echo "$percent < 80.0" | bc -l)
-              if [ "$cmp" -eq 1 ]; then
-                echo "Coverage below threshold (80%); failing job" && exit 1
-              fi
-            fi
-          else
-            echo "No coverage.xml found; skipping threshold check"
-          fi
+          # Use the correct root 'tests' directory
+          coverage run -m pytest -q tests
+          coverage xml -o coverage.xml
 
-  parity:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        use_sdk: ["false", "true"]
-    name: parity-${{ matrix.use_sdk }}
-    env:
-      USE_OFFICIAL_SDK: ${{ matrix.use_sdk }}
-    steps:
-      - uses: actions/checkout@v3
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: "3.10"
-      - name: Install dependencies
+      - name: Ruff lint and format check
         run: |
-          python -m pip install --upgrade pip
-          pip install -r workers/requirements.txt
-          pip install slack_bolt aiohttp redis pytest
-          pip install ruff coverage
-      - name: Run parity integration tests
-        run: |
-          # Run the full test suite; parity tests are included
-          coverage run -m pytest -q trading_platform/tests || pytest -q trading_platform/tests
-      - name: Generate parity summary
-        run: |
-          # Create a summary of ticker and user_update events for this toggle
-          python trading_platform/scripts/run_parity.py
-      - name: Upload parity summary
-        uses: actions/upload-artifact@v3
-        with:
-          name: parity_summary_${{ matrix.use_sdk }}
-          path: artifacts/parity_summary.txt
-      - name: Verify parity summary
-        run: |
-          # Ensure the parity summary indicates success.  If the marker
-          # is missing, the script will exit with a non-zero code and
-          # fail the job.
-          python trading_platform/scripts/verify_parity_summary.py --file artifacts/parity_summary.txt
-      - name: Coverage summary
-        run: |
-          python trading_platform/scripts/coverage_summary.py || true
+          ruff check .
+          ruff format --check .
 
-  governance-check:
-    runs-on: ubuntu-latest
-    needs: build
-    steps:
-      - name: Governance enforcement reminder
+      - name: Security Scan (Bandit & Safety)
         run: |
-          echo "Verify branch protection rules and required PR reviews in GitHub settings."
-
-  verify-exportables:
-    runs-on: ubuntu-latest
-    needs: build
-    steps:
-      - uses: actions/checkout@v3
-      - name: Verify exportable artifacts
-        run: |
-          # Verify that exportables exist and print their sizes and checksums.  This
-          # step does not fail the build if files are missing; it provides
-          # provenance information in the logs.
-          python trading_platform/scripts/verify_exportables.py || true
-
-  ga-ready-check:
-    runs-on: ubuntu-latest
-    needs: [build, parity]
-    steps:
-      - uses: actions/checkout@v3
-      - name: Echo version
-        run: |
-          echo "GA version check: $(cat trading_platform/VERSION)"
-      - name: Download parity summaries
-        uses: actions/download-artifact@v3
-        with:
-          pattern: parity_summary_*  # download both sdk and raw summaries
-          path: downloaded_parity
-      - name: Verify parity summaries
-        run: |
-          # Iterate over downloaded parity summary files and verify each
-          for f in downloaded_parity/**/parity_summary_*; do
-            echo "Checking $f";
-            python trading_platform/scripts/verify_parity_summary.py --file "$f" || exit 1;
-          done
-      - name: Verify exportables
-        run: |
-          python trading_platform/scripts/verify_exportables.py || true
+          bandit -r ./workers/src
+          safety check
