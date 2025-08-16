@@ -28,6 +28,8 @@ jobs:
           pip install slack_bolt aiohttp redis pytest
           # Install linting and coverage tools
           pip install ruff coverage
+      - name: Set PYTHONPATH
+        run: echo "PYTHONPATH=$PYTHONPATH:$(pwd)" >> $GITHUB_ENV
       - name: Run tests
         run: |
           # Run test suite with coverage.  If coverage fails to load, fall back to pytest.
@@ -102,6 +104,8 @@ jobs:
           pip install -r workers/requirements.txt
           pip install slack_bolt aiohttp redis pytest
           pip install ruff coverage
+      - name: Set PYTHONPATH
+        run: echo "PYTHONPATH=$PYTHONPATH:$(pwd)" >> $GITHUB_ENV
       - name: Run parity integration tests
         run: |
           # Run the full test suite; parity tests are included
