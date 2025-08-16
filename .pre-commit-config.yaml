@@ -23,3 +23,14 @@ repos:
     rev: 1.8.2
     hooks:
       - id: poetry-check
+    - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.7.1
+    hooks:
+      - id: mypy
+        additional_dependencies: ["types-redis", "types-requests"]
+
+  - repo: https://github.com/pyupio/safety
+    rev: master
+    hooks:
+      - id: safety
+    
