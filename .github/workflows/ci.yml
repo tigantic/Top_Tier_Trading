@@ -31,23 +31,23 @@ jobs:
       - name: Run tests
         run: |
           # Run test suite with coverage.  If coverage fails to load, fall back to pytest.
-          if coverage run -m pytest -q trading_platform/tests; then
+          if coverage run -m pytest -q tests; then
             coverage xml -o coverage.xml || true
           else
-            pytest -q trading_platform/tests || pytest -q tests
+            pytest -q tests
           fi
       - name: Ruff lint
         run: |
           # Run Ruff on the project.  Do not fail the build if Ruff is unavailable or emits warnings.
           if command -v ruff >/dev/null 2>&1; then
-            ruff trading_platform || true
+            ruff . || true
           else
             echo "ruff not installed; skipping lint"
           fi
       - name: Coverage summary
         run: |
           # Print coverage summary for key modules if coverage.xml exists
-          python trading_platform/scripts/coverage_summary.py || true
+          python scripts/coverage_summary.py || true
 
       - name: Type check
         run: |
@@ -105,11 +105,11 @@ jobs:
       - name: Run parity integration tests
         run: |
           # Run the full test suite; parity tests are included
-          coverage run -m pytest -q trading_platform/tests || pytest -q trading_platform/tests
+          coverage run -m pytest -q tests || pytest -q tests
       - name: Generate parity summary
         run: |
           # Create a summary of ticker and user_update events for this toggle
-          python trading_platform/scripts/run_parity.py
+          python scripts/run_parity.py
       - name: Upload parity summary
         uses: actions/upload-artifact@v4
         with:
@@ -120,10 +120,10 @@ jobs:
           # Ensure the parity summary indicates success.  If the marker
           # is missing, the script will exit with a non-zero code and
           # fail the job.
-          python trading_platform/scripts/verify_parity_summary.py --file artifacts/parity_summary.txt
+          python scripts/verify_parity_summary.py --file artifacts/parity_summary.txt
       - name: Coverage summary
         run: |
-          python trading_platform/scripts/coverage_summary.py || true
+          python scripts/coverage_summary.py || true
 
   governance-check:
     runs-on: ubuntu-latest
@@ -143,7 +143,7 @@ jobs:
           # Verify that exportables exist and print their sizes and checksums.  This
           # step does not fail the build if files are missing; it provides
           # provenance information in the logs.
-          python trading_platform/scripts/verify_exportables.py || true
+          python scripts/verify_exportables.py || true
 
   ga-ready-check:
     runs-on: ubuntu-latest
@@ -152,7 +152,7 @@ jobs:
       - uses: actions/checkout@v3
       - name: Echo version
         run: |
-          echo "GA version check: $(cat trading_platform/VERSION)"
+          echo "GA version check: $(cat VERSION)"
       - name: Download parity summaries
         uses: actions/download-artifact@v4
         with:
@@ -163,8 +163,8 @@ jobs:
           # Iterate over downloaded parity summary files and verify each
           for f in downloaded_parity/**/parity_summary_*; do
             echo "Checking $f";
-            python trading_platform/scripts/verify_parity_summary.py --file "$f" || exit 1;
+            python scripts/verify_parity_summary.py --file "$f" || exit 1;
           done
       - name: Verify exportables
         run: |
-          python trading_platform/scripts/verify_exportables.py || true
+          python scripts/verify_exportables.py || true
