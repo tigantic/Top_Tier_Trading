@@ -12,7 +12,7 @@ import asyncio
 
 import pytest  # type: ignore
 
-from workers.src.workers.services.alert_service import AlertService
+from workers.services.alert_service import AlertService
 
 
 class DummyEventBus:
@@ -54,5 +54,11 @@ async def test_alert_service_teams(monkeypatch):
     service = AlertService(event_bus=DummyEventBus({"kill_switch": True, "daily_pnl": -5}))
     # Should read TEAMS_WEBHOOK_URL
     assert service.teams_webhook == "https://example.com/webhook"
-    # run run() once to process message; it should not raise
-    await asyncio.wait_for(service.run(), timeout=0.1)
+    # Run briefly then cancel; service.run() loops forever
+    task = asyncio.create_task(service.run())
+    await asyncio.sleep(0.1)
+    task.cancel()
+    try:
+        await task
+    except asyncio.CancelledError:
+        pass

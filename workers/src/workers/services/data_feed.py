@@ -20,7 +20,7 @@ import json
 import os
 import random
 import time
-from typing import Iterable, List, Any, Optional
+from typing import List, Any, Optional
 
 import websockets
 
@@ -34,7 +34,13 @@ class DataFeedService:
     risk service must implement a ``record_price(product_id, price)`` coroutine.
     """
 
-    def __init__(self, price_cache: PriceCache, event_bus: Optional[Any] = None, risk_service: Optional[Any] = None, event_store: Optional[Any] = None) -> None:
+    def __init__(
+        self,
+        price_cache: PriceCache,
+        event_bus: Optional[Any] = None,
+        risk_service: Optional[Any] = None,
+        event_store: Optional[Any] = None,
+    ) -> None:
         """Initialize the data feed.
 
         Args:

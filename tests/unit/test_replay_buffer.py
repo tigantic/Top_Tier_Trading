@@ -7,7 +7,7 @@ accurately.
 
 import random
 
-from workers.src.workers.rl.replay_buffer import ReplayBuffer
+from workers.rl.replay_buffer import ReplayBuffer
 
 
 def test_replay_buffer_push_and_len():

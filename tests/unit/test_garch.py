@@ -13,7 +13,7 @@ from __future__ import annotations
 
 import pytest  # type: ignore
 
-from workers.src.workers.risk.garch import fit_garch, forecast_volatility
+from workers.risk.garch import fit_garch, forecast_volatility
 
 
 def test_fit_garch_returns_positive_parameters() -> None:

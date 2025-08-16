@@ -312,7 +312,10 @@ class RiskService:
                 # Persist state: attempt to call settle_order with (product_id, notional)
                 # signature if supported; otherwise fallback to original signature
                 try:
-                    await self.state_store.settle_order(product_id="UNKNOWN", notional=notional)  # type: ignore[arg-type]
+                    await self.state_store.settle_order(
+                        product_id="UNKNOWN",
+                        notional=notional,
+                    )  # type: ignore[arg-type]
                 except TypeError:
                     try:
                         await self.state_store.settle_order(client_order_id, fill_price, size)  # type: ignore[misc]

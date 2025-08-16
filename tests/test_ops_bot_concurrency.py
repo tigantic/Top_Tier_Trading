@@ -13,6 +13,7 @@ import time
 import pytest  # type: ignore
 
 
+@pytest.mark.asyncio
 async def test_deduplication_logic(monkeypatch):
     # Simulate the deduplication sets and send logic by capturing texts
     sent_texts = []
