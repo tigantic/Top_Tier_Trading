@@ -9,8 +9,8 @@ on:
       - "*"
 
 jobs:
-  lint-and-security:
-    name: Lint, Format & Security Scan
+  static-analysis:
+    name: Lint, Format & Security
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -29,12 +29,11 @@ jobs:
           poetry run ruff format --check .
           poetry run ruff check .
           poetry run bandit -r ./workers/src
-          poetry run safety check
           poetry run mypy workers/src
           poetry run poetry lock --check
 
   python-tests:
-    name: Python Tests
+    name: Python Tests & Dependency Scan
     runs-on: ubuntu-latest
     services:
       postgres:
@@ -60,6 +59,8 @@ jobs:
         uses: snok/install-poetry@v1
       - name: Install all dependencies
         run: poetry install --with test,lint --no-root
+      - name: Run Security Scan on Dependencies
+        run: poetry run safety check
       - name: Run Tests with Coverage
         env:
           STATE_STORE_URI: "postgresql+asyncpg://postgres:postgres@localhost:5432/test_db"
@@ -78,6 +79,12 @@ jobs:
     defaults:
       run:
         working-directory: ./api
+    services:
+      redis:
+        image: redis:7
+        ports: ["6379:6379"]
+        options: >-
+          --health-cmd="redis-cli ping" --health-interval=10s --health-timeout=5s --health-retries=5
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -90,6 +97,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
       - name: Run Lint and Tests
+        env:
+          REDIS_HOST: localhost
+          REDIS_PORT: 6379
         run: npm run lint && npm run test
 
   docker-build-verify:

@@ -1,31 +1,37 @@
 # syntax=docker/dockerfile:1.4
 
-FROM python:3.11-slim AS base
+# Stage 1: Build stage with Poetry
+FROM python:3.11-slim AS builder
 
-WORKDIR /usr/src/app
+WORKDIR /app
 
-ENV PYTHONDONTWRITEBYTECODE=1
-ENV PYTHONUNBUFFERED=1
-ENV PYTHONPATH=/usr/src/app/src
+ENV POETRY_NO_INTERACTION=1 \
+    POETRY_VIRTUALENVS_IN_PROJECT=1 \
+    POETRY_VIRTUALENVS_CREATE=1 \
+    POETRY_CACHE_DIR=/tmp/poetry_cache
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    ca-certificates \
-    && rm -rf /var/lib/apt/lists/*
+RUN pip install poetry
 
-# Install Python dependencies
-COPY requirements.txt ./
-RUN pip install --no-cache-dir -r requirements.txt
+# Copy the root pyproject.toml to install dependencies
+COPY pyproject.toml poetry.lock ./
+RUN poetry install --no-root --no-dev
 
-# Copy source code
-COPY src ./src
+# Stage 2: Final runtime stage
+FROM python:3.11-slim AS final
 
-# Healthcheck script placeholder
-COPY src/healthcheck.py /usr/local/bin/backtester-healthcheck.py
-RUN chmod +x /usr/local/bin/backtester-healthcheck.py
+WORKDIR /app
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    VIRTUAL_ENV=/app/.venv \
+    PATH="/app/.venv/bin:$PATH"
+
+COPY --from=builder ${VIRTUAL_ENV} ${VIRTUAL_ENV}
+COPY ./backtester/src ./backtester/src
+
+WORKDIR /
 
 HEALTHCHECK --interval=60s --timeout=5s --retries=3 \
-  CMD python /usr/local/bin/backtester-healthcheck.py
+  CMD python /app/backtester/src/backtester/healthcheck.py
 
-# Default command runs the backtester CLI
 CMD ["python", "-m", "backtester.backtester_main"]
