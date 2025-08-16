@@ -47,9 +47,14 @@ from __future__ import annotations
 import asyncio
 import json
 import os
+import sys
 import time
 import uuid
-from typing import Dict, Any, Optional, Set
+from pathlib import Path
+from typing import Any, Dict, Optional
+
+sys.path.append(str(Path(__file__).resolve().parent.parent / "workers" / "src"))
+from workers.secrets_manager import get_default_secrets_manager  # type: ignore  # noqa: E402
 
 try:
     from slack_bolt.async_app import AsyncApp  # type: ignore
@@ -62,14 +67,14 @@ except ImportError:
 try:
     import aiohttp  # type: ignore
 except ImportError:
-    raise SystemExit("aiohttp is required for ops_bot_async. Please install with `pip install aiohttp`")
+    raise SystemExit(
+        "aiohttp is required for ops_bot_async. Please install with `pip install aiohttp`"
+    )
 
 try:
     import redis.asyncio as aioredis  # type: ignore
 except ImportError:
     aioredis = None  # type: ignore
-
-from workers.src.workers.secrets_manager import get_default_secrets_manager  # type: ignore
 
 try:
     from aiohttp import web  # type: ignore
@@ -154,7 +159,9 @@ async def redis_listener(app: AsyncApp) -> None:
         await pubsub.subscribe(channel_name)
     except Exception:
         return
-    alert_channel = os.getenv("SLACK_ALERT_CHANNEL") or os.getenv("SLACK_CHANNEL_ID") or ""
+    alert_channel = (
+        os.getenv("SLACK_ALERT_CHANNEL") or os.getenv("SLACK_CHANNEL_ID") or ""
+    )
     # Deduplication TTL cache: maps message text to expiry timestamp.  Messages
     # remain in the cache for ``ALERT_DEDUP_TTL`` seconds to prevent duplicates.
     dedup_cache: Dict[str, float] = {}
@@ -171,9 +178,15 @@ async def redis_listener(app: AsyncApp) -> None:
         text: Optional[str] = None
         if kill_switch:
             text = (
-                f"⚠️ Kill switch engaged! Daily PnL: {daily_pnl:.2f}" if daily_pnl is not None else "⚠️ Kill switch engaged!"
+                f"⚠️ Kill switch engaged! Daily PnL: {daily_pnl:.2f}"
+                if daily_pnl is not None
+                else "⚠️ Kill switch engaged!"
             )
-        elif daily_pnl is not None and alert_threshold and (-daily_pnl) >= alert_threshold:
+        elif (
+            daily_pnl is not None
+            and alert_threshold
+            and (-daily_pnl) >= alert_threshold
+        ):
             text = f"🔻 PnL alert: Daily PnL = {daily_pnl:.2f} (threshold {alert_threshold})"
         if text and alert_channel:
             now_ts = time.time()
@@ -211,10 +224,14 @@ async def create_async_app() -> AsyncApp:
     """Instantiate an AsyncApp with secrets loaded from the secrets manager."""
     secrets = get_default_secrets_manager()
     bot_token = secrets.get_secret("SLACK_BOT_TOKEN") or os.getenv("SLACK_BOT_TOKEN")
-    signing_secret = secrets.get_secret("SLACK_SIGNING_SECRET") or os.getenv("SLACK_SIGNING_SECRET")
+    signing_secret = secrets.get_secret("SLACK_SIGNING_SECRET") or os.getenv(
+        "SLACK_SIGNING_SECRET"
+    )
     app_token = secrets.get_secret("SLACK_APP_TOKEN") or os.getenv("SLACK_APP_TOKEN")
     if not (bot_token and signing_secret and app_token):
-        raise RuntimeError("Slack credentials must be provided via secrets manager or environment")
+        raise RuntimeError(
+            "Slack credentials must be provided via secrets manager or environment"
+        )
     app = AsyncApp(token=bot_token, signing_secret=signing_secret)
 
     @app.command("/exposure")
@@ -259,6 +276,7 @@ async def create_async_app() -> AsyncApp:
             lines.append(f"*Open Orders*: {open_orders}")
         lines.append(f"*Kill Switch*: {'ON' if kill_switch else 'OFF'}")
         await respond("\n".join(lines))
+
     return app, app_token
 
 
@@ -269,6 +287,7 @@ async def main() -> None:
     # Launch health endpoint if aiohttp.web is available
     health_task: Optional[asyncio.Task] = None
     if web is not None:
+
         async def start_health_server() -> None:
             async def health(request: web.Request) -> web.Response:  # type: ignore
                 # Readiness: attempt to parse metrics (may return empty dict) and return OK
@@ -278,11 +297,14 @@ async def main() -> None:
                 except Exception:
                     status = "error"
                 return web.json_response({"status": status})
+
             health_app = web.Application()
             health_app.router.add_get("/healthz", health)
             runner = web.AppRunner(health_app)
             await runner.setup()
-            site = web.TCPSite(runner, host="0.0.0.0", port=int(os.getenv("HEALTH_PORT", "8080")))
+            site = web.TCPSite(
+                runner, host="0.0.0.0", port=int(os.getenv("HEALTH_PORT", "8080"))
+            )
             await site.start()
             # Keep running until cancelled
             try:
@@ -290,6 +312,7 @@ async def main() -> None:
                     await asyncio.sleep(3600)
             except asyncio.CancelledError:
                 await runner.cleanup()
+
         health_task = asyncio.create_task(start_health_server())
     handler = AsyncSocketModeHandler(app, app_token)
     try:
