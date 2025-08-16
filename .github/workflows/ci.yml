@@ -21,7 +21,6 @@ jobs:
         uses: ./.github/actions/setup-python
 
       - name: Run Linters and Format Check
-        # 'poetry run' ensures the commands are executed inside the correct environment.
         run: poetry run ruff check . && poetry run ruff format --check .
 
   security-scan:
@@ -40,11 +39,13 @@ jobs:
   integration-tests:
     runs-on: ubuntu-latest
     name: Integration Tests
+    
+    # Service containers provide a live database for testing.
     services:
       postgres:
         image: postgres:15
         env:
-          POSTGRANALYZE_USER: postgres
+          POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
           POSTGRES_DB: test_db
         ports:

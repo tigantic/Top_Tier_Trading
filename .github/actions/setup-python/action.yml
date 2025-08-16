@@ -10,7 +10,7 @@ runs:
         cache: 'poetry'
 
     - name: Install Poetry
-      # This dedicated action correctly installs the Poetry tool and adds it to the PATH.
+      # This dedicated action reliably installs Poetry and adds it to the PATH.
       uses: snok/install-poetry@v1
       with:
         virtualenvs-create: true
