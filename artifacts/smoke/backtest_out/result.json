@@ -1,0 +1,6 @@
+{
+  "timestamp": "2025-08-15T18:26:19.409238",
+  "config_path": "conf/config.yaml",
+  "config_preview": "# Example configuration for backtesting or paper trading.\nmode: backtest\nmarkets:\n  - BTC-USD\n  - ETH-USD\n  - XRP-USD\nstrategy:\n  name: simple_strategy\n  poll_interval: 10          # seconds between p",
+  "message": "Backtest completed (stub)."
+}

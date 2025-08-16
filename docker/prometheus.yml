@@ -1,0 +1,13 @@
+global:
+  scrape_interval: 15s
+  scrape_timeout: 5s
+
+scrape_configs:
+  - job_name: "workers"
+    metrics_path: "/metrics"
+    static_configs:
+      - targets: ["workers:9108"]
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+        replacement: workers

@@ -1,0 +1,15 @@
+# Example configuration for live trading (stub).
+mode: live
+markets:
+  - BTC-USD
+strategy:
+  name: simple_strategy
+  poll_interval: 10
+  price_delta_pct: 0.2
+  size: 0.001
+risk:
+  max_order_notional: 2000
+  max_orders_per_minute: 20
+  max_open_orders: 20
+  price_band_pct: 1.5
+  daily_max_loss: 20000

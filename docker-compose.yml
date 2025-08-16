@@ -1,0 +1,194 @@
+version: '3.8'
+
+services:
+  # PostgreSQL database
+  db:
+    image: postgres:15
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    networks:
+      - app-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis cache
+  cache:
+    image: redis:7
+    volumes:
+      - cache_data:/data
+    networks:
+      - app-net
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # API service (TypeScript)
+  api:
+    env_file:
+      - ./conf/secrets.env
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    depends_on:
+      db:
+        condition: service_healthy
+      cache:
+        condition: service_healthy
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_HOST=db
+      - POSTGRES_PORT=${POSTGRES_PORT}
+      - REDIS_HOST=cache
+      - REDIS_PORT=${REDIS_PORT}
+      - COINBASE_API_KEY=${COINBASE_API_KEY}
+      - COINBASE_API_SECRET_FILE=${COINBASE_API_SECRET_FILE}
+      - COINBASE_PASSPHRASE=${COINBASE_PASSPHRASE}
+      - COINBASE_CLIENT_ID=${COINBASE_CLIENT_ID}
+      - COINBASE_CLIENT_SECRET=${COINBASE_CLIENT_SECRET}
+      - COINBASE_RETAIL_PORTFOLIO_ID=${COINBASE_RETAIL_PORTFOLIO_ID}
+      - ALLOWED_MARKETS=${ALLOWED_MARKETS}
+      - LIVE_TRADING_DEFAULT=${LIVE_TRADING_DEFAULT}
+      - DRY_RUN=${DRY_RUN}
+      - SAFE_MODE=${SAFE_MODE}
+      - MAX_ORDER_NOTIONAL=${MAX_ORDER_NOTIONAL}
+      - MAX_ORDERS_PER_MINUTE=${MAX_ORDERS_PER_MINUTE}
+      - LOG_LEVEL=${LOG_LEVEL}
+    volumes:
+      - ./api:/usr/src/app
+      - ./conf:/usr/src/app/conf:ro
+      - ./conf:/usr/src/app/conf:ro
+      - ./conf:/usr/src/app/conf:ro
+    ports:
+      - "8000:8000"
+    networks:
+      - app-net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/healthz"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # Worker services (Python)
+  workers:
+    env_file:
+      - ./conf/secrets.env
+    build:
+      context: ./workers
+      dockerfile: Dockerfile
+    depends_on:
+      db:
+        condition: service_healthy
+      cache:
+        condition: service_healthy
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_HOST=db
+      - POSTGRES_PORT=${POSTGRES_PORT}
+      - REDIS_HOST=cache
+      - REDIS_PORT=${REDIS_PORT}
+      - COINBASE_API_KEY=${COINBASE_API_KEY}
+      - COINBASE_API_SECRET_FILE=${COINBASE_API_SECRET_FILE}
+      - COINBASE_PASSPHRASE=${COINBASE_PASSPHRASE}
+      - COINBASE_CLIENT_ID=${COINBASE_CLIENT_ID}
+      - COINBASE_CLIENT_SECRET=${COINBASE_CLIENT_SECRET}
+      - COINBASE_RETAIL_PORTFOLIO_ID=${COINBASE_RETAIL_PORTFOLIO_ID}
+      - ALLOWED_MARKETS=${ALLOWED_MARKETS}
+      - LIVE_TRADING_DEFAULT=${LIVE_TRADING_DEFAULT}
+      - DRY_RUN=${DRY_RUN}
+      - SAFE_MODE=${SAFE_MODE}
+      - MAX_ORDER_NOTIONAL=${MAX_ORDER_NOTIONAL}
+      - MAX_ORDERS_PER_MINUTE=${MAX_ORDERS_PER_MINUTE}
+      - LOG_LEVEL=${LOG_LEVEL}
+      - PYTHONPATH=/usr/src/app/src
+    volumes:
+      - ./workers:/usr/src/app
+      - ./conf:/usr/src/app/conf:ro
+      - ./conf:/usr/src/app/conf:ro
+      - ./conf:/usr/src/app/conf:ro
+    networks:
+      - app-net
+    healthcheck:
+      test: ["CMD", "python", "-m", "workers.healthcheck"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # Backtester service (Python)
+  backtester:
+    env_file:
+      - ./conf/secrets.env
+    build:
+      context: ./backtester
+      dockerfile: Dockerfile
+    depends_on:
+      db:
+        condition: service_healthy
+      cache:
+        condition: service_healthy
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_HOST=db
+      - POSTGRES_PORT=${POSTGRES_PORT}
+      - REDIS_HOST=cache
+      - REDIS_PORT=${REDIS_PORT}
+      - ALLOWED_MARKETS=${ALLOWED_MARKETS}
+      - LOG_LEVEL=${LOG_LEVEL}
+      - PYTHONPATH=/usr/src/app/src
+    volumes:
+      - ./backtester:/usr/src/app
+      - ./conf:/usr/src/app/conf:ro
+      - ./conf:/usr/src/app/conf:ro
+      - ./conf:/usr/src/app/conf:ro
+    networks:
+      - app-net
+    healthcheck:
+      test: ["CMD", "python", "-m", "backtester.healthcheck"]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+
+  # Ops UI service (Next.js dashboard)
+  ops-ui:
+    env_file:
+      - ./conf/secrets.env
+    build:
+      context: ./ops-ui
+      dockerfile: Dockerfile
+    depends_on:
+      workers:
+        condition: service_started
+    environment:
+      # URL to the worker metrics endpoint within the Docker network
+      - METRICS_URL=http://workers:9108/metrics
+    ports:
+      - "3000:3000"
+    networks:
+      - app-net
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+networks:
+  app-net:
+    driver: bridge
+
+volumes:
+  db_data:
+  cache_data:

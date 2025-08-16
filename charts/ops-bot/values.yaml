@@ -1,0 +1,28 @@
+replicaCount: 1
+
+image:
+  repository: your-registry/ops-bot
+  tag: "latest"
+  pullPolicy: IfNotPresent
+
+env:
+  METRICS_URL: "http://prometheus:9108/metrics"
+  REDIS_HOST: "redis"
+  REDIS_PORT: "6379"
+  ALERT_ENABLE: "true"
+  ALERT_PNL_THRESHOLD: "1000"
+  ALERT_DEDUP_TTL: "60"
+  HEALTH_PORT: "8080"
+
+secrets:
+  slackBotToken: ""
+  slackAppToken: ""
+  slackSigningSecret: ""
+  slackAlertChannel: ""
+  teamsWebhookUrl: ""
+
+resources: {}
+
+service:
+  type: ClusterIP
+  port: 8080

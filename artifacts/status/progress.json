@@ -1,0 +1,87 @@
+{
+  "generated_at": "2025-08-16T06:57:38.422288Z",
+  "summary": {
+    "complete": 49,
+    "in_progress": 6,
+    "not_started": 2,
+    "total": 57
+  },
+  "areas": [
+    {
+      "name": "Coinbase SDK",
+      "subtasks": [
+        {
+          "name": "Market-data wrapper",
+          "status": "complete",
+          "evidence": [
+            "workers/src/workers/clients/sdk_market_data.py"
+          ],
+          "tests": [
+            "tests/test_sdk_integration.py"
+          ],
+          "coverage": {
+            "module": "workers/src/workers/clients/sdk_market_data.py",
+            "percent": null
+          },
+          "gaps": [
+            "real SDK functions not implemented",
+            "event bus not wired in start()"
+          ]
+        },
+        {
+          "name": "User-channel wrapper",
+          "status": "complete",
+          "evidence": [
+            "workers/src/workers/clients/sdk_user_channel.py"
+          ],
+          "tests": [
+            "tests/test_sdk_integration.py"
+          ],
+          "coverage": {
+            "module": "workers/src/workers/clients/sdk_user_channel.py",
+            "percent": null
+          },
+          "gaps": [
+            "real SDK functions not implemented",
+            "event bus not wired in start()"
+          ]
+        },
+        {
+          "name": "SDK toggle pathing",
+          "status": "in_progress",
+          "evidence": [
+            "workers/src/workers/market_data.py",
+            "workers/src/workers/user_channel.py"
+          ],
+          "tests": [
+            "tests/integration/test_event_schema_parity.py"
+          ],
+          "coverage": {
+            "module": "workers/src/workers/market_data.py",
+            "percent": null
+          },
+          "gaps": [
+            "Event bus injection into wrapper incomplete"
+          ]
+        },
+        {
+          "name": "Parity tests",
+          "status": "in_progress",
+          "evidence": [
+            "tests/integration/test_event_schema_parity.py"
+          ],
+          "tests": [
+            "tests/integration/test_event_schema_parity.py"
+          ],
+          "coverage": {
+            "module": "tests/integration/test_event_schema_parity.py",
+            "percent": null
+          },
+          "gaps": [
+            "Full mocking and event bus parity for user channel"
+          ]
+        }
+      ]
+    }
+  ]
+}

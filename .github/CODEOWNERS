@@ -1,0 +1,14 @@
+# CODEOWNERS
+#
+# This file defines individuals or teams responsible for reviewing
+# changes to specific parts of the repository.  GitHub uses these
+# patterns to automatically request reviews when a pull request
+# touches the listed paths.  Adjust the owners as appropriate for
+# your organisation.  Use GitHub handles or team names (e.g.
+# @org/team).
+
+*       @dev-team            # Fallback owner for all files
+docs/*  @docs-team           # Documentation custodians
+workers/src/workers/** @backend-team   # Backend services
+api/**  @frontend-team       # API and UI
+charts/** @devops-team       # Helm charts and infrastructure

@@ -1,0 +1,17 @@
+# Example configuration for backtesting or paper trading.
+mode: backtest
+markets:
+  - BTC-USD
+  - ETH-USD
+  - XRP-USD
+strategy:
+  name: simple_strategy
+  poll_interval: 10          # seconds between price polls
+  price_delta_pct: 0.2       # percentage change to trigger trades
+  size: 0.001                # trade size in base currency
+risk:
+  max_order_notional: 1000
+  max_orders_per_minute: 30
+  max_open_orders: 50
+  price_band_pct: 2.5
+  daily_max_loss: 10000

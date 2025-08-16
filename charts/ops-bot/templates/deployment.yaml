@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "ops-bot.fullname" . }}
+  labels:
+    {{- include "ops-bot.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "ops-bot.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "ops-bot.selectorLabels" . | nindent 8 }}
+    spec:
+      containers:
+        - name: ops-bot
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          envFrom:
+            - configMapRef:
+                name: {{ include "ops-bot.fullname" . }}-config
+            - secretRef:
+                name: {{ include "ops-bot.fullname" . }}-secret
+          ports:
+            - containerPort: {{ .Values.service.port }}
+      restartPolicy: Always

@@ -1,0 +1,181 @@
+{
+  "id": null,
+  "title": "Trading Platform Dashboard",
+  "tags": ["atlas", "trading"],
+  "timezone": "browser",
+  "schemaVersion": 16,
+  "version": 0,
+  "refresh": "30s",
+  "panels": [
+    {
+      "title": "Exposure by Product",
+      "type": "graph",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "atlas_exposure",
+          "legendFormat": "{{product}}",
+          "interval": ""
+        }
+      ],
+      "xaxis": {
+        "mode": "time",
+        "show": true
+      },
+      "yaxes": [
+        {
+          "show": true,
+          "label": "Exposure (USD)",
+          "logBase": 1
+        },
+        {
+          "show": false
+        }
+      ],
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 0 }
+    },
+    {
+      "title": "Kill Switch Status",
+      "type": "stat",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "atlas_kill_switch",
+          "legendFormat": "Kill Switch"
+        }
+      ],
+      "gridPos": { "h": 4, "w": 12, "x": 0, "y": 8 },
+      "options": {
+        "reduceOptions": { "calcs": ["last"], "fields": "", "values": false },
+        "textMode": "auto",
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "red", "value": 1 }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "title": "Open Orders",
+      "type": "stat",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "atlas_open_orders",
+          "legendFormat": "Open Orders"
+        }
+      ],
+      "gridPos": { "h": 4, "w": 12, "x": 12, "y": 8 },
+      "options": {
+        "reduceOptions": { "calcs": ["last"], "fields": "", "values": false },
+        "textMode": "auto",
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto"
+      }
+    },
+    {
+      "title": "Last Prices",
+      "type": "graph",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "atlas_last_price",
+          "legendFormat": "{{product}}",
+          "interval": ""
+        }
+      ],
+      "xaxis": {
+        "mode": "time",
+        "show": true
+      },
+      "yaxes": [
+        {
+          "show": true,
+          "label": "Last Price",
+          "logBase": 1
+        },
+        {
+          "show": false
+        }
+      ],
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 12 }
+    }
+    ,
+    {
+      "title": "Daily PnL",
+      "type": "stat",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "atlas_daily_pnl",
+          "legendFormat": "PnL"
+        }
+      ],
+      "gridPos": { "h": 4, "w": 8, "x": 0, "y": 20 },
+      "options": {
+        "reduceOptions": { "calcs": ["last"], "fields": "", "values": false },
+        "textMode": "auto",
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto"
+      }
+    },
+    {
+      "title": "Account Balance",
+      "type": "stat",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "atlas_account_balance",
+          "legendFormat": "Balance"
+        }
+      ],
+      "gridPos": { "h": 4, "w": 8, "x": 8, "y": 20 },
+      "options": {
+        "reduceOptions": { "calcs": ["last"], "fields": "", "values": false },
+        "textMode": "auto",
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto"
+      }
+    },
+    {
+      "title": "Execution Latency",
+      "type": "graph",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "atlas_order_latency_ms",
+          "legendFormat": "Latency (ms)",
+          "interval": ""
+        }
+      ],
+      "xaxis": {
+        "mode": "time",
+        "show": true
+      },
+      "yaxes": [
+        {
+          "show": true,
+          "label": "Latency (ms)",
+          "logBase": 1
+        },
+        {
+          "show": false
+        }
+      ],
+      "gridPos": { "h": 4, "w": 8, "x": 16, "y": 20 }
+    }
+  ]
+}
