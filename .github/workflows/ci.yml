@@ -11,6 +11,27 @@ on:
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
+
+    # Service containers provide live Postgres and Redis for integration tests
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: test_db
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready" --health-interval=10s --health-timeout=5s --health-retries=5
+
+      redis:
+        image: redis:7
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd="redis-cli ping" --health-interval=10s --health-timeout=5s --health-retries=5
+
     strategy:
       matrix:
         python-version: ["3.11"]
@@ -26,8 +47,7 @@ jobs:
           cache: 'poetry'
 
       - name: Install Poetry
-        # This step uses a dedicated action to install the Poetry executable
-        # and add it to the PATH for all subsequent steps.
+        # This dedicated action installs the Poetry executable and adds it to the PATH
         uses: snok/install-poetry@v1
         with:
           virtualenvs-create: true
@@ -37,10 +57,16 @@ jobs:
         run: poetry install --no-root --no-interaction --no-ansi
 
       - name: Lint, Format, and Security Scan
+        # 'poetry run' ensures commands use the correct virtual environment and dependencies
         run: |
           poetry run ruff check .
           poetry run ruff format --check .
           poetry run bandit -r ./workers/src
 
       - name: Run Tests with Coverage
+        # Environment variables are passed to the tests to connect to the service containers
+        env:
+          STATE_STORE_URI: "postgresql+asyncpg://postgres:postgres@localhost:5432/test_db"
+          REDIS_HOST: localhost
+          REDIS_PORT: 6379
         run: poetry run coverage run -m pytest -q tests
