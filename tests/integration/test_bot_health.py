@@ -10,11 +10,11 @@ field.  Offline we limit ourselves to functional testing of the
 underlying call.
 """
 
-import asyncio
 
 import pytest  # type: ignore
 
-from scripts import ops_bot_async
+slack_bolt = pytest.importorskip("slack_bolt")
+from scripts import ops_bot_async  # noqa: E402
 
 
 @pytest.mark.asyncio  # type: ignore

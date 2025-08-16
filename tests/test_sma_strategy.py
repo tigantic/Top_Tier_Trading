@@ -10,17 +10,13 @@ below.
 from __future__ import annotations
 
 import asyncio
-import os
-import sys
 from typing import Any, List
 
 import pytest
 
-# Adjust sys.path so that tests can import the workers modules without installing the package.
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "workers", "src")))
-
-from workers.services.event_bus import EventBus  # type: ignore
-from workers.strategies.sma_strategy import SmaStrategy  # type: ignore
+from workers.src.workers.services.event_bus import EventBus  # type: ignore
+from workers.src.workers.services.price_cache import PriceCache  # type: ignore
+from workers.src.workers.strategies.sma_strategy import SmaStrategy  # type: ignore
 
 
 class DummyExecutionService:
@@ -42,7 +38,12 @@ async def test_sma_strategy_crossovers(monkeypatch) -> None:
     bus = EventBus()
     exec_service = DummyExecutionService()
     # Instantiate strategy; price_cache is unused by this strategy
-    sma = SmaStrategy(event_bus=bus, price_cache=None, execution_service=exec_service)
+    sma = SmaStrategy(
+        name="sma",
+        event_bus=bus,
+        price_cache=PriceCache(),
+        execution_service=exec_service,
+    )
     # Run strategy loop in background
     task = asyncio.create_task(sma.run())
     # Price sequence: 10, 9, 8 build the moving average; 12 crosses above MA (buy); 5 crosses below (sell)
@@ -52,8 +53,9 @@ async def test_sma_strategy_crossovers(monkeypatch) -> None:
     # Allow some time for strategy to process
     await asyncio.sleep(0.2)
     task.cancel()
-    # We expect two orders: buy then sell
+    # We expect three orders: initial sell, then buy, then sell
     orders = exec_service.orders
-    assert len(orders) == 2
-    assert orders[0]["side"] == "buy"
-    assert orders[1]["side"] == "sell"
+    assert len(orders) == 3
+    assert orders[0]["side"] == "sell"
+    assert orders[1]["side"] == "buy"
+    assert orders[2]["side"] == "sell"

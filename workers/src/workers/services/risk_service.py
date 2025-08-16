@@ -48,7 +48,12 @@ class RiskService:
     immediately to risk state changes without polling Prometheus.
     """
 
-    def __init__(self, *, state_store: Optional[object] = None, event_bus: Optional[object] = None) -> None:
+    def __init__(
+        self,
+        *,
+        state_store: Optional[object] = None,
+        event_bus: Optional[object] = None,
+    ) -> None:
         # Configuration from environment
         self.max_order_notional = float(os.getenv("MAX_ORDER_NOTIONAL", 0) or 0)
         self.max_orders_per_minute = int(os.getenv("MAX_ORDERS_PER_MINUTE", 0) or 0)
@@ -102,6 +107,7 @@ class RiskService:
         self._price_histories: Dict[str, Deque[float]] = defaultdict(
             lambda: deque(maxlen=self.volatility_window or 1)
         )
+        self._last_prices: Dict[str, float] = {}
 
         # For exponentially weighted volatility estimation.  When using the
         # ``ewma`` volatility method, this dictionary stores the latest
@@ -119,6 +125,7 @@ class RiskService:
         self._atr_histories: Dict[str, Deque[float]] = defaultdict(
             lambda: deque(maxlen=self.atr_window or 1)
         )
+        self._atr_last_prices: Dict[str, float] = {}
         # Store the latest ATR value per product to avoid recomputing for every call
         self._atr_values: Dict[str, float] = {}
 
@@ -193,7 +200,10 @@ class RiskService:
             cutoff = now_ts - 60.0
             while self.order_timestamps and self.order_timestamps[0] < cutoff:
                 self.order_timestamps.popleft()
-            if self.max_orders_per_minute and len(self.order_timestamps) >= self.max_orders_per_minute:
+            if (
+                self.max_orders_per_minute
+                and len(self.order_timestamps) >= self.max_orders_per_minute
+            ):
                 return False
             # Max open orders
             if self.max_open_orders and len(self.open_orders) >= self.max_open_orders:
@@ -223,7 +233,14 @@ class RiskService:
             # All checks passed
             return True
 
-    async def register_order(self, client_order_id: str, product_id: str, side: str, size: float, price: float) -> None:
+    async def register_order(
+        self,
+        client_order_id: str,
+        product_id: str,
+        side: str,
+        size: float,
+        price: float,
+    ) -> None:
         """Register a pending order.
 
         This updates exposures and order counters.  Call this after
@@ -234,7 +251,9 @@ class RiskService:
             # Track open orders by ID and notional
             self.open_orders[client_order_id] = notional
             # Exposure tracks signed notional
-            self.exposures[product_id] += notional if side.lower() == "buy" else -notional
+            self.exposures[product_id] += (
+                notional if side.lower() == "buy" else -notional
+            )
             # Position approximates exposure divided by price (approx.)
             self.positions[product_id] += size if side.lower() == "buy" else -size
 
@@ -273,7 +292,9 @@ class RiskService:
                     except Exception:
                         pass
 
-    async def settle_order(self, client_order_id: str, fill_price: float, size: float) -> None:
+    async def settle_order(
+        self, client_order_id: str, fill_price: float, size: float
+    ) -> None:
         """Settle a filled or cancelled order.
 
         Args:
@@ -284,7 +305,7 @@ class RiskService:
         async with self._lock:
             notional = abs(size * fill_price)
             if client_order_id in self.open_orders:
-                prev_notional = self.open_orders.pop(client_order_id)
+                _ = self.open_orders.pop(client_order_id)
                 # Remove exposure for the portion of the order
                 # Determine sign based on original side stored in positions
                 # We approximate by reversing notional sign
@@ -360,7 +381,7 @@ class RiskService:
         if self.volatility_window and self.volatility_window > 1:
             history = self._price_histories[product_id]
             # If there is a previous price stored on the history, compute return
-            last_price = getattr(history, "last_price", None)
+            last_price = self._last_prices.get(product_id)
             if last_price is not None:
                 try:
                     ret = (price - last_price) / last_price
@@ -374,28 +395,33 @@ class RiskService:
                         if prev_var is None:
                             new_var = ret * ret
                         else:
-                            new_var = self.volatility_alpha * (ret * ret) + (1 - self.volatility_alpha) * prev_var
+                            new_var = (
+                                self.volatility_alpha * (ret * ret)
+                                + (1 - self.volatility_alpha) * prev_var
+                            )
                         self._ewma_variances[product_id] = new_var
                 except Exception:
                     pass
             # Store last observed price for next calculation
-            setattr(history, "last_price", price)
+            self._last_prices[product_id] = price
 
         # Update ATR histories.  ATR is based on the absolute percentage change
         # between consecutive prices.  Only update when the ATR window is at least 1.
         if self.atr_window and self.atr_window > 0:
             atr_history = self._atr_histories[product_id]
-            last_atr_price = getattr(atr_history, "last_price", None)
+            last_atr_price = self._atr_last_prices.get(product_id)
             if last_atr_price is not None and last_atr_price > 0:
                 try:
                     abs_ret = abs(price - last_atr_price) / last_atr_price
                     atr_history.append(abs_ret)
                     # Compute the simple moving average of the absolute returns to obtain ATR
                     if atr_history:
-                        self._atr_values[product_id] = sum(atr_history) / len(atr_history)
+                        self._atr_values[product_id] = sum(atr_history) / len(
+                            atr_history
+                        )
                 except Exception:
                     pass
-            setattr(atr_history, "last_price", price)
+            self._atr_last_prices[product_id] = price
 
     def _compute_volatility(self, product_id: str) -> Optional[float]:
         """Compute a volatility estimate for the given product.
@@ -431,6 +457,7 @@ class RiskService:
             return None
         if self.volatility_method == "ewma":
             import math
+
             var = self._ewma_variances.get(product_id)
             if var is None or var <= 0:
                 return None
@@ -440,6 +467,7 @@ class RiskService:
         if not hist or len(hist) < max(1, self.volatility_window - 1):
             return None
         import math
+
         mean = sum(hist) / len(hist)
         # Use sample variance (unbiased) if more than one observation, else population variance
         if len(hist) > 1:
