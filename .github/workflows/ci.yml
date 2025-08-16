@@ -28,6 +28,8 @@ jobs:
           pip install slack_bolt aiohttp redis pytest
           # Install linting and coverage tools
           pip install ruff coverage
+      - name: Set PYTHONPATH
+        run: echo "PYTHONPATH=$PYTHONPATH:$(pwd)" >> $GITHUB_ENV
       - name: Run tests
         run: |
           # Run test suite with coverage.  If coverage fails to load, fall back to pytest.
@@ -102,6 +104,8 @@ jobs:
           pip install -r workers/requirements.txt
           pip install slack_bolt aiohttp redis pytest
           pip install ruff coverage
+      - name: Set PYTHONPATH
+        run: echo "PYTHONPATH=$PYTHONPATH:$(pwd)" >> $GITHUB_ENV
       - name: Run parity integration tests
         run: |
           # Run the full test suite; parity tests are included
@@ -111,7 +115,7 @@ jobs:
           # Create a summary of ticker and user_update events for this toggle
           python trading_platform/scripts/run_parity.py
       - name: Upload parity summary
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: parity_summary_${{ matrix.use_sdk }}
           path: artifacts/parity_summary.txt
