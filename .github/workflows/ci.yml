@@ -111,7 +111,7 @@ jobs:
           # Create a summary of ticker and user_update events for this toggle
           python trading_platform/scripts/run_parity.py
       - name: Upload parity summary
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: parity_summary_${{ matrix.use_sdk }}
           path: artifacts/parity_summary.txt
