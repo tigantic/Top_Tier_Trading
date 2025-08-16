@@ -9,38 +9,71 @@ on:
       - "*"
 
 jobs:
-  build-and-test:
+  lint-and-format:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        python-version: ["3.11"]
+    name: Lint & Format
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python and Install Dependencies
+        uses: ./.github/actions/setup-python
+
+      - name: Run Linters and Format Check
+        run: |
+          poetry run ruff check .
+          poetry run ruff format --check .
+
+  security-scan:
+    runs-on: ubuntu-latest
+    name: Security Scan
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python and Install Dependencies
+        uses: ./.github/actions/setup-python
+
+      - name: Run Security Scans
+        run: |
+          poetry run bandit -r ./workers/src
+          poetry run safety check
+
+  integration-tests:
+    runs-on: ubuntu-latest
+    name: Integration Tests
+    
+    # Service containers provide a live database and cache for testing
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: test_db
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready" --health-interval=10s --health-timeout=5s --health-retries=5
+
+      redis:
+        image: redis:7
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd="redis-cli ping" --health-interval=10s --health-timeout=5s --health-retries=5
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v5
-        with:
-          python-version: ${{ matrix.python-version }}
-          cache: 'poetry'
-
-      - name: Install Poetry
-        # This dedicated action installs the Poetry executable and adds it to the PATH
-        # for all subsequent steps in the job. This is the missing step.
-        uses: snok/install-poetry@v1
-        with:
-          virtualenvs-create: true
-          virtualenvs-in-project: true
-
-      - name: Install dependencies
-        run: poetry install --no-root --no-interaction --no-ansi
-
-      - name: Lint, Format, and Security Scan
-        run: |
-          poetry run ruff check .
-          poetry run ruff format --check .
-          poetry run bandit -r ./workers/src
+      - name: Setup Python and Install Dependencies
+        uses: ./.github/actions/setup-python
 
       - name: Run Tests with Coverage
+        # Provide the service connection details to the test environment
+        env:
+          STATE_STORE_URI: "postgresql+asyncpg://postgres:postgres@localhost:5432/test_db"
+          REDIS_HOST: localhost
+          REDIS_PORT: 6379
         run: poetry run coverage run -m pytest -q tests
