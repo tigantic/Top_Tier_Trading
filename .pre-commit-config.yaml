@@ -24,9 +24,10 @@ repos:
         args: ["-q", "-r", ".", "-c", "bandit.yml"]
         pass_filenames: false
 
+  # Let pre-commit pass requirements-runtime.txt as the positional file.
   - repo: https://github.com/Lucas-C/pre-commit-hooks-safety
     rev: v1.4.2
     hooks:
       - id: python-safety-dependencies-check
-        pass_filenames: false
-        args: ["--short-report", "--file=requirements-runtime.txt"]
+        files: ^requirements-runtime\.txt$
+        args: ["--short-report"]
