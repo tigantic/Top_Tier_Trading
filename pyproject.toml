@@ -1,5 +1,6 @@
 [tool.poetry]
 
+
 name = "atlas-trade"
 version = "0.1.0"
 description = "Multi-agent crypto trading platform with Coinbase Advanced Trade integration."
@@ -36,6 +37,7 @@ pytest-asyncio = "^0.21.0"
 coverage = "^7.5.0"
 
 [tool.poetry.group.lint]
+
 optional = true
 
 [tool.poetry.group.lint.dependencies]
@@ -44,9 +46,9 @@ bandit = "^1.7.9"
 safety = "^3.2.3"
 mypy = "^1.10.0"
 alembic = "^1.13.1"
-pre-commit = "^3.5.0"
+pre = "^3.5.0"
 
 
 [build-system]
-requires = ["poetry-core>=1.2.0]
+requires 
 build-backend = "poetry.core.masonry.api"
