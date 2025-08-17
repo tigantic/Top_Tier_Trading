@@ -106,7 +106,6 @@ class UserChannelClient:
 
         **Payload schema**: see :mod:`workers.src.workers.models_events`.
         """
-        from ..models_events import normalize_user_update_event  # import lazily
         if self._client is None or WebSocketClient is None:
             logger.warning(
                 "Official SDK not available or failed to initialise; UserChannelClient will yield no data."
@@ -121,7 +120,10 @@ class UserChannelClient:
                 await ws.subscribe(channels=["user"])
                 async for msg in ws.messages():
                     try:
-                        from ..services.publishers import publish_user_update  # import lazily
+                        from ..services.publishers import (
+                            publish_user_update,
+                        )  # import lazily
+
                         norm = await publish_user_update(self.event_bus, msg)
                     except Exception:
                         continue

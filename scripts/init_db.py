@@ -32,7 +32,6 @@ from __future__ import annotations
 
 import argparse
 import asyncio
-from typing import Optional
 
 from workers.services.db_state_store import DatabaseStateStore
 

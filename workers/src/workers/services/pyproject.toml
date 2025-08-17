@@ -24,10 +24,6 @@ types-python-dateutil = "*"
 requires = ["poetry-core>=1.8.0"]
 build-backend = "poetry.core.masonry.api"
 
-# ---------------------------
-# Tool configuration
-# ---------------------------
-
 [tool.ruff]
 line-length = 100
 target-version = "py312"
@@ -40,18 +36,8 @@ extend-select = ["I"]
 python_version = "3.12"
 warn_unused_configs = true
 ignore_missing_imports = true
-# IMPORTANT: do not set mypy_path; it creates duplicate module names with this layout.
-# Scope checks strictly to the src layout so files are only seen one way.
-files = ["workers/src/workers"]
 exclude = '(^tests/|^docs/|^scripts/)'
 explicit_package_bases = true
-
-# Temporarily relax noisy categories so hooks pass; we can tighten later.
-disable_error_code = [
-  "dict-item",
-  "typeddict-unknown-key",
-  "attr-defined",
-  "return-value",
-  "arg-type",
-  "assignment",
-]
+# NOTE: Do NOT enable namespace_packages here; it causes duplicate-module names with workers/src/workers layout
+mypy_path = ["workers/src"]
+files = ["workers/src/workers"]

@@ -11,7 +11,6 @@ topic via a unique exclusive queue.
 
 from __future__ import annotations
 
-import asyncio
 import json
 from typing import Any, AsyncGenerator, Dict
 
@@ -52,9 +51,7 @@ class RabbitMQEventBus:
         await self._connect()
         body = json.dumps(message).encode("utf-8")
         assert self._exchange is not None
-        await self._exchange.publish(
-            aio_pika.Message(body), routing_key=topic
-        )
+        await self._exchange.publish(aio_pika.Message(body), routing_key=topic)
 
     async def subscribe(self, topic: str) -> AsyncGenerator[Dict[str, Any], None]:
         """Subscribe to a topic and yield messages as they arrive."""

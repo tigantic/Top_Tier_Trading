@@ -37,18 +37,20 @@ import os
 from pathlib import Path
 from typing import Any, Dict, List, Tuple
 
-from trading_platform.workers.src.workers import market_data, user_channel  # type: ignore
 from trading_platform.tests.helpers.fake_bus import FakeBus  # type: ignore
 from trading_platform.tests.helpers.fake_streams import (
     DummyWebSocket,
-    raw_ws_messages,
     raw_user_messages,
+    raw_ws_messages,
     ticker_stream,
     user_update_stream,
 )  # type: ignore
+from trading_platform.workers.src.workers import market_data, user_channel  # type: ignore
 
 
-def _split_events(events: List[Tuple[str, Dict[str, Any]]]) -> Dict[str, List[Dict[str, Any]]]:
+def _split_events(
+    events: List[Tuple[str, Dict[str, Any]]],
+) -> Dict[str, List[Dict[str, Any]]]:
     buckets: Dict[str, List[Dict[str, Any]]] = {"ticker": [], "user_update": []}
     for etype, data in events:
         buckets.setdefault(etype, []).append(data)
@@ -73,17 +75,19 @@ async def _run_parity(use_sdk: bool) -> Tuple[bool, Dict[str, int]]:
     """
     # Patch the workers to use fake streams and event bus
     bus = FakeBus()
+
     # Patch websockets.connect for market data and user channel
     async def fake_md_connect(uri: str):
         return DummyWebSocket(raw_ws_messages())
+
     async def fake_uc_connect(uri: str):
         return DummyWebSocket(raw_user_messages())
+
     # Patch subscribe function to no‑op
     market_data._subscribe = lambda ws, products: None  # type: ignore
     # Set event bus
     market_data.event_bus = bus
     user_channel.event_bus = bus
-    import types  # for monkeypatch-like assignment
     # Replace websockets.connect in both modules
     market_data.websockets.connect = fake_md_connect  # type: ignore
     user_channel.websockets.connect = fake_uc_connect  # type: ignore
@@ -91,22 +95,33 @@ async def _run_parity(use_sdk: bool) -> Tuple[bool, Dict[str, int]]:
     user_channel.JwtManager.refresh_token = lambda self: asyncio.sleep(0)  # type: ignore
     # Replace SDK clients with dummy streams when using SDK
     if use_sdk:
+
         class DummyMarketClient:
             def __init__(self, *args, **kwargs):
                 self.event_bus = kwargs.get("event_bus")
+
             async def stream(self):
                 async for msg in ticker_stream():
-                    from trading_platform.workers.src.workers.services.publishers import publish_ticker  # type: ignore
+                    from trading_platform.workers.src.workers.services.publishers import (
+                        publish_ticker,
+                    )  # type: ignore
+
                     await publish_ticker(self.event_bus, msg)
                     yield msg
+
         class DummyUserClient:
             def __init__(self, *args, **kwargs):
                 self.event_bus = kwargs.get("event_bus")
+
             async def stream(self):
                 async for msg in user_update_stream():
-                    from trading_platform.workers.src.workers.services.publishers import publish_user_update  # type: ignore
+                    from trading_platform.workers.src.workers.services.publishers import (
+                        publish_user_update,
+                    )  # type: ignore
+
                     await publish_user_update(self.event_bus, msg)
                     yield msg
+
         market_data.MarketDataClient = DummyMarketClient  # type: ignore
         user_channel.UserChannelClient = DummyUserClient  # type: ignore
     # Set USE_OFFICIAL_SDK environment variable accordingly
@@ -126,6 +141,7 @@ async def _run_parity(use_sdk: bool) -> Tuple[bool, Dict[str, int]]:
     # Validate parity conditions
     ok = True
     counts = {k: len(v) for k, v in buckets.items()}
+
     # For each category ensure schema keys and types are consistent
     def check_category(name: str, events_list: List[Dict[str, Any]]) -> bool:
         if not events_list:
@@ -144,6 +160,7 @@ async def _run_parity(use_sdk: bool) -> Tuple[bool, Dict[str, int]]:
                 if nk in ev and not isinstance(ev[nk], float):
                     return False
         return True
+
     for name, events_list in buckets.items():
         if not check_category(name, events_list):
             ok = False
@@ -157,7 +174,7 @@ def main() -> None:
     counts: Dict[str, int] = {}
     try:
         ok, counts = asyncio.run(_run_parity(use_sdk))
-    except Exception as exc:
+    except Exception:
         ok = False
         counts = {"error": 1}
     # Write summary file

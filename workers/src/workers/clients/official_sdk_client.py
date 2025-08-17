@@ -36,7 +36,14 @@ except Exception:
 class OfficialRestClient:
     """Wrapper for the official Coinbase Advanced Trade REST client."""
 
-    def __init__(self, api_key: str, api_secret: str, passphrase: str | None = None, *, sandbox: bool = True) -> None:
+    def __init__(
+        self,
+        api_key: str,
+        api_secret: str,
+        passphrase: str | None = None,
+        *,
+        sandbox: bool = True,
+    ) -> None:
         if RESTClient is None:
             raise RuntimeError(
                 "Official Coinbase SDK not available. Install 'coinbase-advanced-py' and set USE_OFFICIAL_SDK=true."

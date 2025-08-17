@@ -12,8 +12,9 @@ from __future__ import annotations
 
 import os
 import pathlib
-from alembic.config import Config
+
 from alembic import command
+from alembic.config import Config
 
 
 def run_migrations() -> None:

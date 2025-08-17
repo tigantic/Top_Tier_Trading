@@ -40,7 +40,6 @@ except Exception:
 logger = logging.getLogger(__name__)
 
 
-
 class HttpExchangeClient:
     """Asynchronous Coinbase REST API client with simple rate limiting."""
 
@@ -97,7 +96,9 @@ class HttpExchangeClient:
         self._token_lock = asyncio.Lock()
         self._last_refill = time.monotonic()
         # Interval (in seconds) at which a token becomes available.
-        self._token_interval = 60.0 / max_requests_per_minute if max_requests_per_minute > 0 else 60.0
+        self._token_interval = (
+            60.0 / max_requests_per_minute if max_requests_per_minute > 0 else 60.0
+        )
 
     def _sign_request(self, timestamp: str, method: str, request_path: str, body: str) -> str:
         """Generate a HMAC-SHA256 signature for the request."""
@@ -144,7 +145,9 @@ class HttpExchangeClient:
             # If no tokens available, sleep for one interval
             await asyncio.sleep(self._token_interval)
 
-    async def _request(self, method: str, path: str, payload: Optional[Dict[str, Any]] = None) -> Any:
+    async def _request(
+        self, method: str, path: str, payload: Optional[Dict[str, Any]] = None
+    ) -> Any:
         # Rate limiting: acquire token
         await self._acquire_token()
         url = f"{self.base_url}{path}"

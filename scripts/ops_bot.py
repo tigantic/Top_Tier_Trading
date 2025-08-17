@@ -40,13 +40,14 @@ from __future__ import annotations
 import os
 import re
 import threading
-import time
-from typing import Dict, Any, Optional
+from typing import Any, Dict, Optional
 
 try:
     import requests  # type: ignore[import]
 except ImportError:
-    raise SystemExit("The requests library is required for ops_bot. Please install with `pip install requests`")
+    raise SystemExit(
+        "The requests library is required for ops_bot. Please install with `pip install requests`"
+    )
 
 try:
     import redis  # type: ignore[import]
@@ -196,11 +197,23 @@ def start_redis_listener(app: App) -> None:
                 kill_switch = data.get("kill_switch")
                 daily_pnl = data.get("daily_pnl")
                 if kill_switch:
-                    text = f"⚠️ Kill switch engaged! Daily PnL: {daily_pnl:.2f}" if daily_pnl is not None else "⚠️ Kill switch engaged!"
-                    app.client.chat_postMessage(channel=os.getenv("SLACK_ALERT_CHANNEL", os.getenv("SLACK_CHANNEL_ID", "")), text=text)
+                    text = (
+                        f"⚠️ Kill switch engaged! Daily PnL: {daily_pnl:.2f}"
+                        if daily_pnl is not None
+                        else "⚠️ Kill switch engaged!"
+                    )
+                    app.client.chat_postMessage(
+                        channel=os.getenv("SLACK_ALERT_CHANNEL", os.getenv("SLACK_CHANNEL_ID", "")),
+                        text=text,
+                    )
                 elif alert_threshold and daily_pnl is not None and (-daily_pnl) >= alert_threshold:
-                    text = f"🔻 PnL alert: Daily PnL = {daily_pnl:.2f} (threshold {alert_threshold})"
-                    app.client.chat_postMessage(channel=os.getenv("SLACK_ALERT_CHANNEL", os.getenv("SLACK_CHANNEL_ID", "")), text=text)
+                    text = (
+                        f"🔻 PnL alert: Daily PnL = {daily_pnl:.2f} (threshold {alert_threshold})"
+                    )
+                    app.client.chat_postMessage(
+                        channel=os.getenv("SLACK_ALERT_CHANNEL", os.getenv("SLACK_CHANNEL_ID", "")),
+                        text=text,
+                    )
 
     thread = threading.Thread(target=listen, daemon=True)
     thread.start()

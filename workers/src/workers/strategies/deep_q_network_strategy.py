@@ -65,7 +65,6 @@ deep learning model if used beyond demonstration purposes.
 
 from __future__ import annotations
 
-import asyncio
 import os
 import random
 from typing import Any, Dict, List, Optional
@@ -134,7 +133,13 @@ class DeepQNetworkStrategy(BaseStrategy):
             q_vals.append(s)
         return q_vals
 
-    def _update_weights(self, features: List[float], action_idx: int, reward: float, next_features: List[float]) -> None:
+    def _update_weights(
+        self,
+        features: List[float],
+        action_idx: int,
+        reward: float,
+        next_features: List[float],
+    ) -> None:
         """Perform gradient update on the weights for the taken action."""
         # Compute target: reward + gamma * max_a' Q(next_state, a')
         q_current = self._q_values(features)[action_idx]

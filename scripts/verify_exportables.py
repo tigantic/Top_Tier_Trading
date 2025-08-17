@@ -18,9 +18,8 @@ verification.
 from __future__ import annotations
 
 import hashlib
-from pathlib import Path
 import sys
-
+from pathlib import Path
 
 EXPORT_DIR = Path("artifacts/exports")
 # List of expected exportable artifact filenames.  Include both

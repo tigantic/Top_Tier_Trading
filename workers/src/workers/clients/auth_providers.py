@@ -6,6 +6,7 @@ different authentication modes.  Separating auth concerns from the HTTP
 client allows switching between API key and OAuth flows without
 modifying the client code.
 """
+
 from __future__ import annotations
 
 import base64
@@ -30,7 +31,12 @@ class AuthProvider:
 class ApiKeyProvider(AuthProvider):
     """HMAC-based authentication using API key, secret and optional passphrase."""
 
-    def __init__(self, api_key: Optional[str] = None, api_secret: Optional[str] = None, passphrase: Optional[str] = None) -> None:
+    def __init__(
+        self,
+        api_key: Optional[str] = None,
+        api_secret: Optional[str] = None,
+        passphrase: Optional[str] = None,
+    ) -> None:
         self.api_key = api_key or os.getenv("COINBASE_API_KEY", "")
         # Secret may be provided directly or via file defined by COINBASE_API_SECRET_FILE
         secret_value = api_secret or os.getenv("COINBASE_API_SECRET")
@@ -75,7 +81,9 @@ class OAuthProvider(AuthProvider):
     which is required for spot orders when using OAuth.
     """
 
-    def __init__(self, access_token: Optional[str] = None, portfolio_id: Optional[str] = None) -> None:
+    def __init__(
+        self, access_token: Optional[str] = None, portfolio_id: Optional[str] = None
+    ) -> None:
         self.access_token = access_token or os.getenv("COINBASE_ACCESS_TOKEN", "")
         self.portfolio_id = portfolio_id or os.getenv("COINBASE_RETAIL_PORTFOLIO_ID", "")
 

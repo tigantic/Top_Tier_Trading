@@ -25,27 +25,24 @@ manage migrations.
 
 from __future__ import annotations
 
-import asyncio
 import datetime as dt
 from decimal import Decimal
-from typing import Dict, Optional
+from typing import Dict
 
 from sqlalchemy import (
     Column,
     Date,
-    Numeric,
-    String,
     Integer,
     MetaData,
+    Numeric,
+    String,
     Table,
+    delete,
     insert,
     select,
     update,
-    delete,
 )
-from sqlalchemy.ext.asyncio import AsyncEngine, create_async_engine, AsyncSession
-from sqlalchemy.orm import registry, mapped_column
-
+from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, create_async_engine
 
 # Define SQLAlchemy tables using classical mapping for clarity
 metadata = MetaData()
@@ -142,9 +139,7 @@ class DatabaseStateStore:
                             .values(notional=new_value)
                         )
 
-    async def update_position(
-        self, product_id: str, quantity: float, average_price: float
-    ) -> None:
+    async def update_position(self, product_id: str, quantity: float, average_price: float) -> None:
         """Upsert a position for a product."""
         async with AsyncSession(self.engine) as session:
             async with session.begin():
@@ -177,9 +172,7 @@ class DatabaseStateStore:
         async with AsyncSession(self.engine) as session:
             async with session.begin():
                 await session.execute(
-                    insert(daily_pnl_table).values(
-                        trade_date=trade_date, pnl=Decimal(pnl)
-                    )
+                    insert(daily_pnl_table).values(trade_date=trade_date, pnl=Decimal(pnl))
                 )
 
     async def reset_daily(self) -> None:
@@ -196,10 +189,7 @@ class DatabaseStateStore:
         """Return a mapping of product_id to total notional exposure."""
         async with AsyncSession(self.engine) as session:
             result = await session.execute(select(exposures_table))
-            exposures = {
-                row.product_id: float(row.notional)
-                for row in result.mappings().all()
-            }
+            exposures = {row.product_id: float(row.notional) for row in result.mappings().all()}
             return exposures
 
     async def get_positions(self) -> Dict[str, Dict[str, float]]:

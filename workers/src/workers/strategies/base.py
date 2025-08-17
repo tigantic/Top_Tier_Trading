@@ -8,17 +8,22 @@ contract that all strategies must implement.
 from __future__ import annotations
 
 import abc
-from typing import Any
 
 from ..services.event_bus import EventBus
-from ..services.price_cache import PriceCache
 from ..services.execution_service import ExecutionService
+from ..services.price_cache import PriceCache
 
 
 class BaseStrategy(abc.ABC):
     """Abstract base class for trading strategies."""
 
-    def __init__(self, name: str, event_bus: EventBus, price_cache: PriceCache, execution_service: ExecutionService) -> None:
+    def __init__(
+        self,
+        name: str,
+        event_bus: EventBus,
+        price_cache: PriceCache,
+        execution_service: ExecutionService,
+    ) -> None:
         self.name = name
         self.event_bus = event_bus
         self.price_cache = price_cache

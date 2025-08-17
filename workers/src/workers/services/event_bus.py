@@ -69,6 +69,7 @@ class RedisEventBus(EventBus):
             return
         # Publish JSON‑serializable data to the Redis channel
         import json
+
         await self._redis.publish(event_type, json.dumps(data))
 
     async def subscribe(self, event_type: str) -> AsyncIterator[Any]:
@@ -77,6 +78,7 @@ class RedisEventBus(EventBus):
                 yield item
         else:
             import json
+
             pubsub = self._redis.pubsub()
             await pubsub.subscribe(event_type)
             while True:

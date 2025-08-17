@@ -20,7 +20,7 @@ import json
 import os
 import random
 import time
-from typing import Iterable, List, Any, Optional
+from typing import Any, List, Optional
 
 import websockets
 
@@ -34,7 +34,13 @@ class DataFeedService:
     risk service must implement a ``record_price(product_id, price)`` coroutine.
     """
 
-    def __init__(self, price_cache: PriceCache, event_bus: Optional[Any] = None, risk_service: Optional[Any] = None, event_store: Optional[Any] = None) -> None:
+    def __init__(
+        self,
+        price_cache: PriceCache,
+        event_bus: Optional[Any] = None,
+        risk_service: Optional[Any] = None,
+        event_store: Optional[Any] = None,
+    ) -> None:
         """Initialize the data feed.
 
         Args:
@@ -47,10 +53,7 @@ class DataFeedService:
         self.event_bus = event_bus
         self.risk_service = risk_service
         self.event_store = event_store
-        self.ws_url = os.getenv(
-            "COINBASE_WS_URL",
-            "wss://advanced-trade-ws.coinbase.com"
-        )
+        self.ws_url = os.getenv("COINBASE_WS_URL", "wss://advanced-trade-ws.coinbase.com")
         markets_env = os.getenv("ALLOWED_MARKETS", "BTC-USD,ETH-USD")
         self.products: List[str] = [p.strip() for p in markets_env.split(",") if p.strip()]
         self._reconnect_delay = 1.0
@@ -61,7 +64,7 @@ class DataFeedService:
         return {
             "type": "subscribe",
             "product_ids": self.products,
-            "channels": ["ticker"]
+            "channels": ["ticker"],
         }
 
     async def _heartbeat(self, ws: websockets.WebSocketClientProtocol) -> None:
@@ -109,20 +112,30 @@ class DataFeedService:
                                 # Persist event to event store
                                 if self.event_store:
                                     try:
-                                        await self.event_store.log("market_data", {
-                                            "product_id": product,
-                                            "price": price,
-                                            "timestamp": data.get("time") or data.get("ts") or time.time(),
-                                        })
+                                        await self.event_store.log(
+                                            "market_data",
+                                            {
+                                                "product_id": product,
+                                                "price": price,
+                                                "timestamp": data.get("time")
+                                                or data.get("ts")
+                                                or time.time(),
+                                            },
+                                        )
                                     except Exception:
                                         pass
                                 # Publish ticker event to event bus
                                 if self.event_bus:
-                                    await self.event_bus.publish("ticker", {
-                                        "product_id": product,
-                                        "price": price,
-                                        "timestamp": data.get("time") or data.get("ts") or time.time(),
-                                    })
+                                    await self.event_bus.publish(
+                                        "ticker",
+                                        {
+                                            "product_id": product,
+                                            "price": price,
+                                            "timestamp": data.get("time")
+                                            or data.get("ts")
+                                            or time.time(),
+                                        },
+                                    )
             except Exception:
                 # Exponential backoff with jitter
                 await asyncio.sleep(self._reconnect_delay + random.random())
@@ -130,7 +143,7 @@ class DataFeedService:
             finally:
                 # Cancel heartbeat
                 # Avoid leaving orphaned tasks
-                if 'hb_task' in locals():
+                if "hb_task" in locals():
                     hb_task.cancel()
                     try:
                         await hb_task

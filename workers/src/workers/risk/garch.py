@@ -54,7 +54,7 @@ and periodically re‑estimate parameters.
 
 from __future__ import annotations
 
-from typing import Dict, List, Optional
+from typing import Dict, List
 
 
 def _compute_returns(prices: List[float]) -> List[float]:
@@ -141,7 +141,7 @@ def fit_garch(returns: List[float]) -> Dict[str, float]:
         # Zero variance series; return trivial parameters
         return {"omega": 0.0, "alpha": 0.0, "beta": 0.0}
     # Compute lag‑1 autocorrelation of squared returns
-    sq = [r ** 2 for r in returns]
+    sq = [r**2 for r in returns]
     mean_sq = sum(sq) / n
     # numerator: covariance of squared returns at lag 1
     num = sum((sq[t] - mean_sq) * (sq[t - 1] - mean_sq) for t in range(1, n))
@@ -208,7 +208,7 @@ def forecast_volatility(params: Dict[str, float], horizon: int) -> List[float]:
     forecasts: List[float] = []
     for _ in range(horizon):
         sigma2 = omega + (alpha + beta) * sigma2
-        forecasts.append(sigma2 ** 0.5)  # standard deviation
+        forecasts.append(sigma2**0.5)  # standard deviation
     return forecasts
 
 

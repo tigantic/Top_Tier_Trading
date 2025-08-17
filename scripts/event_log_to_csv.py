@@ -31,7 +31,7 @@ import argparse
 import csv
 import json
 import os
-from typing import Dict, List, Any
+from typing import Any, Dict, List
 
 
 def parse_args() -> argparse.Namespace:
@@ -53,7 +53,7 @@ def parse_args() -> argparse.Namespace:
         "-f",
         default="event_type,timestamp,product_id,side,size,price,client_order_id,daily_pnl",
         help="Comma‑separated list of fields to include in the CSV."
-             "The 'event_type' field is always included.",
+        "The 'event_type' field is always included.",
     )
     return parser.parse_args()
 

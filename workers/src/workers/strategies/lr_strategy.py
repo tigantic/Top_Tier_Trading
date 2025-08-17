@@ -40,9 +40,8 @@ environment variables:
 from __future__ import annotations
 
 import os
-import asyncio
 from collections import deque
-from typing import Any, Deque, Optional
+from typing import Deque, Optional
 
 try:
     import numpy as np  # type: ignore
@@ -52,9 +51,9 @@ except ImportError:
     np = None  # type: ignore
     LogisticRegression = None  # type: ignore
 
-from ..services.price_cache import PriceCache
 from ..services.event_bus import EventBus
 from ..services.execution_service import ExecutionService
+from ..services.price_cache import PriceCache
 from ..services.risk_service import RiskService
 from .base import BaseStrategy
 

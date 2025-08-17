@@ -133,7 +133,12 @@ def write_report(output_path: str, metrics: Dict[str, Tuple[float, float, float]
     lines: List[str] = []
     lines.append("# Volatility Calibration Report\n")
     lines.append("This report summarises volatility statistics derived from the event log.\n")
-    lines.append("For each product we compute the sample standard deviation of log returns,\n" "the exponentially weighted moving average (EWMA) of absolute returns with \n" "alpha=0.94, and the average true range (ATR).  These values can be used to\n" "inform the configuration of volatility bands in the risk engine.\n")
+    lines.append(
+        "For each product we compute the sample standard deviation of log returns,\n"
+        "the exponentially weighted moving average (EWMA) of absolute returns with \n"
+        "alpha=0.94, and the average true range (ATR).  These values can be used to\n"
+        "inform the configuration of volatility bands in the risk engine.\n"
+    )
     lines.append("\n| Product | Std Dev | EWMA | ATR | Suggested Window | Suggested Multiplier |\n")
     lines.append("|--------|--------:|-----:|-----:|----------------:|--------------------:|\n")
     for product, (std_dev, ewma_val, atr_val) in sorted(metrics.items()):
@@ -141,7 +146,9 @@ def write_report(output_path: str, metrics: Dict[str, Tuple[float, float, float]
         window = max(5, int(1 / max(std_dev, 1e-6)))
         # Suggest multiplier as 2 * volatility
         mult = round(std_dev * 2, 4)
-        lines.append(f"| {product} | {std_dev:.6f} | {ewma_val:.6f} | {atr_val:.6f} | {window} | {mult} |\n")
+        lines.append(
+            f"| {product} | {std_dev:.6f} | {ewma_val:.6f} | {atr_val:.6f} | {window} | {mult} |\n"
+        )
     with open(out, "w", encoding="utf-8") as f:
         f.write("".join(lines))
 

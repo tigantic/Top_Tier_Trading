@@ -12,7 +12,7 @@ from __future__ import annotations
 
 import random
 from collections import deque
-from typing import Deque, Generic, Iterable, Iterator, List, Optional, Tuple, TypeVar
+from typing import Deque, Generic, Iterable, Iterator, TypeVar
 
 T = TypeVar("T")
 

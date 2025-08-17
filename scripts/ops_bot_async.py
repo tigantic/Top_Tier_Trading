@@ -49,11 +49,11 @@ import json
 import os
 import time
 import uuid
-from typing import Dict, Any, Optional, Set
+from typing import Any, Dict, Optional
 
 try:
-    from slack_bolt.async_app import AsyncApp  # type: ignore
     from slack_bolt.adapter.socket_mode.aiohttp import AsyncSocketModeHandler  # type: ignore
+    from slack_bolt.async_app import AsyncApp  # type: ignore
 except ImportError:
     raise SystemExit(
         "slack_bolt library is required for ops_bot_async. Please install with `pip install slack_bolt`"
@@ -62,7 +62,9 @@ except ImportError:
 try:
     import aiohttp  # type: ignore
 except ImportError:
-    raise SystemExit("aiohttp is required for ops_bot_async. Please install with `pip install aiohttp`")
+    raise SystemExit(
+        "aiohttp is required for ops_bot_async. Please install with `pip install aiohttp`"
+    )
 
 try:
     import redis.asyncio as aioredis  # type: ignore
@@ -171,7 +173,9 @@ async def redis_listener(app: AsyncApp) -> None:
         text: Optional[str] = None
         if kill_switch:
             text = (
-                f"⚠️ Kill switch engaged! Daily PnL: {daily_pnl:.2f}" if daily_pnl is not None else "⚠️ Kill switch engaged!"
+                f"⚠️ Kill switch engaged! Daily PnL: {daily_pnl:.2f}"
+                if daily_pnl is not None
+                else "⚠️ Kill switch engaged!"
             )
         elif daily_pnl is not None and alert_threshold and (-daily_pnl) >= alert_threshold:
             text = f"🔻 PnL alert: Daily PnL = {daily_pnl:.2f} (threshold {alert_threshold})"
@@ -259,6 +263,7 @@ async def create_async_app() -> AsyncApp:
             lines.append(f"*Open Orders*: {open_orders}")
         lines.append(f"*Kill Switch*: {'ON' if kill_switch else 'OFF'}")
         await respond("\n".join(lines))
+
     return app, app_token
 
 
@@ -269,6 +274,7 @@ async def main() -> None:
     # Launch health endpoint if aiohttp.web is available
     health_task: Optional[asyncio.Task] = None
     if web is not None:
+
         async def start_health_server() -> None:
             async def health(request: web.Request) -> web.Response:  # type: ignore
                 # Readiness: attempt to parse metrics (may return empty dict) and return OK
@@ -278,6 +284,7 @@ async def main() -> None:
                 except Exception:
                     status = "error"
                 return web.json_response({"status": status})
+
             health_app = web.Application()
             health_app.router.add_get("/healthz", health)
             runner = web.AppRunner(health_app)
@@ -290,6 +297,7 @@ async def main() -> None:
                     await asyncio.sleep(3600)
             except asyncio.CancelledError:
                 await runner.cleanup()
+
         health_task = asyncio.create_task(start_health_server())
     handler = AsyncSocketModeHandler(app, app_token)
     try:

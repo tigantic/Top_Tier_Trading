@@ -13,7 +13,7 @@ import asyncio
 import json
 import os
 from datetime import date
-from typing import Dict, Any
+from typing import Any, Dict
 
 
 class StateStore:
@@ -43,7 +43,14 @@ class StateStore:
         with open(self.path, "w", encoding="utf-8") as f:
             json.dump(data, f, indent=2)
 
-    async def save_order(self, client_order_id: str, product_id: str, side: str, size: float, price: float) -> None:
+    async def save_order(
+        self,
+        client_order_id: str,
+        product_id: str,
+        side: str,
+        size: float,
+        price: float,
+    ) -> None:
         record = {
             "id": client_order_id,
             "product_id": product_id,

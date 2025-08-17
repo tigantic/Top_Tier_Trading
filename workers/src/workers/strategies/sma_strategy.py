@@ -34,9 +34,8 @@ Limitations
 
 from __future__ import annotations
 
-import asyncio
 import os
-from collections import deque, defaultdict
+from collections import defaultdict, deque
 from typing import Dict, Tuple
 
 from .base import BaseStrategy
@@ -54,7 +53,9 @@ class SmaStrategy(BaseStrategy):
         # Per‑product price history
         self.prices: Dict[str, deque[float]] = defaultdict(lambda: deque(maxlen=self.window))
         # Per‑product previous price and MA to detect crossings
-        self.prev_state: Dict[str, Tuple[float | None, float | None]] = defaultdict(lambda: (None, None))
+        self.prev_state: Dict[str, Tuple[float | None, float | None]] = defaultdict(
+            lambda: (None, None)
+        )
         # Trade size
         self.size = float(os.getenv("STRATEGY_SIZE", "0.001"))
 

@@ -32,8 +32,8 @@ import logging
 import os
 from typing import Dict, Optional
 
-from ..market_data import get_last_price
 from ..execution import submit_order
+from ..market_data import get_last_price
 from ..risk_engine import OrderRequest
 
 logger = logging.getLogger(__name__)
@@ -41,7 +41,9 @@ logger = logging.getLogger(__name__)
 
 async def start() -> None:
     """Run the simple momentum strategy loop."""
-    products = [p.strip() for p in os.environ.get("ALLOWED_MARKETS", "BTC-USD").split(",") if p.strip()]
+    products = [
+        p.strip() for p in os.environ.get("ALLOWED_MARKETS", "BTC-USD").split(",") if p.strip()
+    ]
     poll_interval = int(os.environ.get("STRATEGY_POLL_INTERVAL", "10"))
     threshold_pct = float(os.environ.get("STRATEGY_PRICE_DELTA_PCT", "0.2")) / 100.0
     size = float(os.environ.get("STRATEGY_SIZE", "0.001"))

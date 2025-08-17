@@ -92,9 +92,11 @@ class AlertService:
         self._secrets = None  # type: Optional[BaseSecretsManager]
         try:
             from ..secrets_manager import get_default_secrets_manager  # type: ignore
+
             self._secrets = get_default_secrets_manager()
         except Exception:
             self._secrets = None
+
         def get_secret(name: str) -> Optional[str]:
             if self._secrets:
                 try:
@@ -104,8 +106,13 @@ class AlertService:
                 except Exception:
                     pass
             return os.getenv(name)
+
         # Alert configuration
-        self.enabled = str(get_secret("ALERT_ENABLE") or "false").lower() in {"true", "1", "yes"}
+        self.enabled = str(get_secret("ALERT_ENABLE") or "false").lower() in {
+            "true",
+            "1",
+            "yes",
+        }
         try:
             self.pnl_threshold = float(get_secret("ALERT_PNL_THRESHOLD") or "0")
         except Exception:
@@ -154,19 +161,21 @@ class AlertService:
             logger.warning("Requests library not available; cannot send Teams alert: %s", text)
             logger.warning("ALERT: %s", text)
             return
-        payload = {
-            "text": text
-        }
+        payload = {"text": text}
+
         # Send in a thread to avoid blocking the event loop
         def post():  # pragma: no cover
             try:
                 resp = requests.post(self.teams_webhook, json=payload, timeout=5)
                 if resp.status_code >= 400:
                     logger.error(
-                        "Failed to send Teams alert (status %s): %s", resp.status_code, resp.text
+                        "Failed to send Teams alert (status %s): %s",
+                        resp.status_code,
+                        resp.text,
                     )
             except Exception as exc:
                 logger.error("Error sending Teams alert: %s", exc)
+
         await asyncio.to_thread(post)
 
     async def run(self) -> None:
@@ -202,7 +211,9 @@ class AlertService:
             alert_text: Optional[str] = None
             if kill_switch:
                 alert_text = f"⚠️ Kill switch engaged! Daily PnL: {daily_pnl:.2f}"
-            elif daily_pnl is not None and self.pnl_threshold and (-daily_pnl) >= self.pnl_threshold:
+            elif (
+                daily_pnl is not None and self.pnl_threshold and (-daily_pnl) >= self.pnl_threshold
+            ):
                 alert_text = (
                     f"🔻 PnL alert: Daily PnL = {daily_pnl:.2f} (threshold {self.pnl_threshold})"
                 )

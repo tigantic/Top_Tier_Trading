@@ -1,0 +1,17 @@
+skips:
+  - B101
+  - B104
+  - B105
+  - B110
+  - B112
+  - B311
+  - B314
+  - B310
+  - B405
+
+exclude_dirs:
+  - tests
+  - .venv
+  - venv
+  - build
+  - dist

@@ -23,10 +23,9 @@ Important:
 
 from __future__ import annotations
 
-import asyncio
 import logging
 from collections import deque
-from typing import List, Optional
+from typing import Optional
 
 try:
     import torch
@@ -63,9 +62,7 @@ class LstmStrategy(BaseStrategy):
         if torch is not None:
             self.model = SimpleLSTM()
         else:
-            logging.warning(
-                "torch is not installed; LstmStrategy will act as a random strategy"
-            )
+            logging.warning("torch is not installed; LstmStrategy will act as a random strategy")
 
     async def run(self) -> None:
         """Main loop for the strategy."""
@@ -84,6 +81,7 @@ class LstmStrategy(BaseStrategy):
             if torch is None or self.model is None:
                 # Fallback: randomly trade with small probability
                 import random
+
                 if random.random() < 0.01:
                     await self.execution_service.submit_order(
                         product_id=product_id,

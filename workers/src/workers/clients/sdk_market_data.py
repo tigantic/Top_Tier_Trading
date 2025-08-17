@@ -18,7 +18,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
-from typing import Any, AsyncGenerator, Dict, Iterable, List, Optional
+from typing import Any, AsyncGenerator, Dict, Iterable, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -125,7 +125,6 @@ class MarketDataClient:
 
         **Payload schema**: see :mod:`workers.src.workers.models_events`.
         """
-        from ..models_events import normalize_ticker_event  # imported lazily to avoid cycles
         if self._client is None or WebSocketClient is None:
             logger.warning(
                 "Official SDK not available or failed to initialise; MarketDataClient will yield no data."
@@ -141,7 +140,10 @@ class MarketDataClient:
                 async for msg in ws.messages():
                     try:
                         # Normalise and publish via shared helper
-                        from ..services.publishers import publish_ticker  # local import to avoid cycles
+                        from ..services.publishers import (
+                            publish_ticker,
+                        )  # local import to avoid cycles
+
                         norm = await publish_ticker(self.event_bus, msg)
                     except Exception:
                         continue

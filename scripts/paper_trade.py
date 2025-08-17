@@ -5,6 +5,7 @@ Paper trading simulation stub.
 This script produces a simple log entry in the specified directory.  It
 illustrates how a paper trading loop might be invoked via the command line.
 """
+
 from __future__ import annotations
 
 import argparse

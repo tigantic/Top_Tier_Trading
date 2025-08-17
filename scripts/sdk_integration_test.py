@@ -51,7 +51,6 @@ from __future__ import annotations
 
 import asyncio
 import os
-from typing import Any, Dict
 
 try:
     # Import the stubs; when the real SDK is installed these will proxy
@@ -87,7 +86,9 @@ async def run_user_channel() -> None:
     api_secret = os.getenv("COINBASE_API_SECRET", "")
     passphrase = os.getenv("COINBASE_PASSPHRASE") or None
     sandbox = os.getenv("USE_STATIC_SANDBOX", "true").lower() in {"true", "1", "yes"}
-    client = UserChannelClient(api_key=api_key, api_secret=api_secret, passphrase=passphrase, sandbox=sandbox)
+    client = UserChannelClient(
+        api_key=api_key, api_secret=api_secret, passphrase=passphrase, sandbox=sandbox
+    )
     async for event in client.stream():
         # event is expected to contain authenticated user data (fills, account updates)
         print(f"User event: {event}")

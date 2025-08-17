@@ -6,6 +6,7 @@ secrets are present in the environment.  It can be used by operators
 to verify that the environment is correctly configured before running
 trading agents.
 """
+
 from __future__ import annotations
 
 import os

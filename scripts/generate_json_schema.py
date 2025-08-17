@@ -26,10 +26,10 @@ from __future__ import annotations
 
 import argparse
 import json
-from typing import Dict, Any, Type
+from typing import Any, Dict, Type
 
 # Domain models are defined in workers.models.  Adjust the import path
-from workers.models import OrderRequest, OrderResponse, Position, Account  # type: ignore
+from workers.models import Account, OrderRequest, OrderResponse, Position  # type: ignore
 
 try:
     from pydantic import BaseModel
