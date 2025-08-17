@@ -21,6 +21,7 @@ jobs:
           python-version: "3.11"
           cache: "poetry"
       - name: Install Poetry
+        # Fix #1: This step reliably installs Poetry and adds it to the PATH.
         uses: snok/install-poetry@v1
       - name: Install linting dependencies
         run: poetry install --with lint --no-root
@@ -56,6 +57,7 @@ jobs:
           python-version: "3.11"
           cache: "poetry"
       - name: Install Poetry
+        # Fix #1: This step reliably installs Poetry and adds it to the PATH.
         uses: snok/install-poetry@v1
       - name: Install all dependencies
         run: poetry install --with test,lint --no-root
@@ -67,11 +69,6 @@ jobs:
           REDIS_HOST: localhost
           REDIS_PORT: 6379
         run: poetry run coverage run -m pytest -q tests
-      - name: Upload coverage report
-        uses: actions/upload-artifact@v4
-        with:
-          name: coverage-report
-          path: coverage.xml
 
   api-tests:
     name: API (TypeScript) Tests
@@ -79,12 +76,6 @@ jobs:
     defaults:
       run:
         working-directory: ./api
-    services:
-      redis:
-        image: redis:7
-        ports: ["6379:6379"]
-        options: >-
-          --health-cmd="redis-cli ping" --health-interval=10s --health-timeout=5s --health-retries=5
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -93,13 +84,11 @@ jobs:
         with:
           node-version: "18"
           cache: "npm"
+          # Fix #3: This path must point to a committed package-lock.json
           cache-dependency-path: "api/package-lock.json"
       - name: Install dependencies
         run: npm ci
       - name: Run Lint and Tests
-        env:
-          REDIS_HOST: localhost
-          REDIS_PORT: 6379
         run: npm run lint && npm run test
 
   docker-build-verify:
@@ -108,5 +97,9 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+      - name: Set up Docker Buildx
+        # Fix #2: This step ensures the Docker environment is fully configured.
+        uses: docker/setup-buildx-action@v3
       - name: Build Docker images
-        run: docker-compose -f docker/docker-compose.yml build
+        # Use 'docker compose' (with a space), which is the modern command.
+        run: docker compose -f docker/docker-compose.yml build

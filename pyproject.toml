@@ -43,7 +43,8 @@ bandit = "^1.7.9"
 safety = "^3.2.3"
 mypy = "^1.10.0"
 alembic = "^1.13.1"
+pre-commit = "^3.5.0"
 
 [build-system]
-requires = ["poetry-core>=1.2.0]
+requires = ["poetry-core>=1.2.0"]
 build-backend = "poetry.core.masonry.api"
