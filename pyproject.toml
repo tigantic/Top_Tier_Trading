@@ -1,4 +1,5 @@
 [tool.poetry]
+
 name = "atlas-trade"
 version = "0.1.0"
 description = "Multi-agent crypto trading platform with Coinbase Advanced Trade integration."
