@@ -1,9 +1,10 @@
-## Crypto Trading Platform
+# Top Tier Trading
 
 ![CI Status](https://img.shields.io/badge/ci-passing-brightgreen.svg)
 ![Python Versions](https://img.shields.io/badge/python-3.10%20%7C%203.11-blue.svg)
 ![License](https://img.shields.io/badge/license-MIT-lightgrey.svg)
 ![Coverage](https://img.shields.io/badge/coverage-N/A-lightgrey.svg)
+> _Maintenance:_ Agent sanity check PR to verify CI triggers/permissions & repo write access. No functional changes.
 
 > **General Availability:** Version 1.0.0 – The API and event schema are now
 > stable.  Consult [`docs/RELEASE_NOTES.md`](docs/RELEASE_NOTES.md) and
