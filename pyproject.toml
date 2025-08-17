@@ -46,9 +46,14 @@ bandit = "^1.7.9"
 safety = "^3.2.3"
 mypy = "^1.10.0"
 alembic = "^1.13.1"
++
++# Add pre-commit hook manager as a linting dependency so that the CI's static analysis
++# job can run pre-commit hooks on the codebase. The caret (^) indicates this
++# dependency is semver compatible and will pull in compatible patch releases.
++pre-commit = "^3.5.0"
 pre = "^3.5.0"
 
 
 [build-system]
 requires 
-build-backend = "poetry.core.masonry.api"
+build-backend +requires = ["poetry-core>=1.2.0"]
