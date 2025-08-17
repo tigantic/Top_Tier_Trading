@@ -15,7 +15,7 @@ repos:
         additional_dependencies:
           - types-requests
           - types-python-dateutil
-        files: ^workers/src/workers/  # limit to src layout to avoid duplicate module names
+        files: ^workers/src/workers/
 
   - repo: https://github.com/PyCQA/bandit
     rev: 1.7.9
@@ -28,6 +28,5 @@ repos:
     rev: v1.4.2
     hooks:
       - id: python-safety-dependencies-check
-        # Let pre-commit pass the file by matching it; do not override with pass_filenames
-        files: ^requirements-runtime\.txt$
-        args: ["--short-report", "--ignore-not-pinned"]
+        pass_filenames: false
+        args: ["--short-report", "--file=requirements-runtime.txt"]
