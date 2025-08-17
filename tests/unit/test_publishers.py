@@ -10,14 +10,13 @@ do not require network access or the Coinbase SDK.
 
 from __future__ import annotations
 
-import asyncio
 import pytest  # type: ignore
 
+from tests.helpers.fake_bus import FakeBus
 from workers.src.workers.services.publishers import (
     publish_ticker,
     publish_user_update,
 )
-from tests.helpers.fake_bus import FakeBus
 
 
 @pytest.mark.asyncio  # type: ignore

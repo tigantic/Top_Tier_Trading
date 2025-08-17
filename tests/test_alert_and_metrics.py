@@ -25,8 +25,8 @@ import pytest
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "workers", "src")))
 
 from workers.services.alert_service import AlertService  # type: ignore
-from workers.services.metrics_service import MetricsService  # type: ignore
 from workers.services.event_bus import EventBus  # type: ignore
+from workers.services.metrics_service import MetricsService  # type: ignore
 from workers.strategies.dqn_strategy import DqnStrategy  # type: ignore
 
 

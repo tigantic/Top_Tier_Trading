@@ -39,6 +39,7 @@ class DummyWebSocket:
         msg = self._messages.pop(0)
         # encode as JSON string to match websockets protocol
         import json
+
         return json.dumps(msg)
 
 
@@ -89,18 +90,26 @@ def raw_user_messages() -> List[Dict[str, Any]]:
     connection in offline tests.
     """
     return [
-        json.loads(json.dumps({
-            "product_id": "BTC-USD",
-            "price": 100.0,
-            "size": 0.01,
-            "side": "buy",
-            "balance": 1.0,
-        })),
-        json.loads(json.dumps({
-            "product_id": "ETH-USD",
-            "price": 2000.0,
-            "size": 0.05,
-            "side": "sell",
-            "balance": 0.95,
-        })),
+        json.loads(
+            json.dumps(
+                {
+                    "product_id": "BTC-USD",
+                    "price": 100.0,
+                    "size": 0.01,
+                    "side": "buy",
+                    "balance": 1.0,
+                }
+            )
+        ),
+        json.loads(
+            json.dumps(
+                {
+                    "product_id": "ETH-USD",
+                    "price": 2000.0,
+                    "size": 0.05,
+                    "side": "sell",
+                    "balance": 0.95,
+                }
+            )
+        ),
     ]

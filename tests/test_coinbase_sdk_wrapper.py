@@ -6,6 +6,7 @@ yielding no data without raising exceptions.
 """
 
 import asyncio
+
 import pytest  # type: ignore
 
 from workers.src.workers.clients.sdk_market_data import MarketDataClient

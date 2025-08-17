@@ -11,7 +11,7 @@ import asyncio
 import json
 import logging
 import os
-from typing import List, Any
+from typing import Any, List
 
 import websockets
 from tenacity import retry, stop_after_attempt, wait_exponential
@@ -23,9 +23,8 @@ except Exception:
     MarketDataClient = None  # type: ignore
 
 # Import normalisation helper for ticker events
-from .models_events import normalize_ticker_event, TickerEvent  # type: ignore
+from .models_events import TickerEvent  # type: ignore
 from .services.publishers import publish_ticker  # type: ignore
-
 
 logger = logging.getLogger(__name__)
 
@@ -69,16 +68,27 @@ async def start() -> None:
     Coinbase WebSocket endpoint.  The worker updates the global
     ``last_prices`` dict for reference by other services.
     """
-    products = os.environ.get("ALLOWED_MARKETS", "BTC-USD").split(',')
+    products = os.environ.get("ALLOWED_MARKETS", "BTC-USD").split(",")
     use_sdk = os.getenv("USE_OFFICIAL_SDK", "false").lower() in {"true", "1", "yes"}
     if use_sdk and MarketDataClient is not None:
         # Attempt to load API credentials via secrets manager or environment
         api_key = os.getenv("COINBASE_API_KEY", "")
         api_secret = os.getenv("COINBASE_API_SECRET", "")
         passphrase = os.getenv("COINBASE_PASSPHRASE", "")
-        sandbox = os.getenv("USE_STATIC_SANDBOX", "true").lower() in {"true", "1", "yes"}
+        sandbox = os.getenv("USE_STATIC_SANDBOX", "true").lower() in {
+            "true",
+            "1",
+            "yes",
+        }
         # Pass the event_bus into the SDK client so that it can publish
-        client = MarketDataClient(api_key=api_key, api_secret=api_secret, passphrase=passphrase or None, sandbox=sandbox, products=products, event_bus=event_bus)
+        client = MarketDataClient(
+            api_key=api_key,
+            api_secret=api_secret,
+            passphrase=passphrase or None,
+            sandbox=sandbox,
+            products=products,
+            event_bus=event_bus,
+        )
         logger.info("Market data worker using Coinbase SDK wrapper (sandbox=%s)", sandbox)
         async for msg in client.stream():
             # Normalise and publish via helper; skip invalid messages
@@ -97,6 +107,7 @@ async def start() -> None:
     async for ws in websockets.connect(uri):
         try:
             await _subscribe(ws, products)
+
             # Send periodic pings to keep the connection alive
             async def heartbeat() -> None:
                 while True:
@@ -131,5 +142,5 @@ async def start() -> None:
             continue
         finally:
             await ws.close()
-            if 'hb_task' in locals():
+            if "hb_task" in locals():
                 hb_task.cancel()

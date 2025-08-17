@@ -40,9 +40,8 @@ from typing import Optional
 
 from .clients.http_exchange import HttpExchangeClient
 from .clients.paper_exchange import PaperExchangeClient
-from .risk_engine import OrderRequest, risk_engine
 from .market_data import get_last_price
-
+from .risk_engine import OrderRequest, risk_engine
 
 logger = logging.getLogger(__name__)
 
@@ -112,7 +111,12 @@ async def _process_orders(client: HttpExchangeClient) -> None:
         # the band check.
         reference_price: Optional[float] = get_last_price(order.product_id)
         if not risk_engine.pre_trade_check(order, reference_price):
-            logger.warning("Risk check failed for order %s %s@%s", order.product_id, order.size, order.price)
+            logger.warning(
+                "Risk check failed for order %s %s@%s",
+                order.product_id,
+                order.size,
+                order.price,
+            )
             continue
         # Generate idempotent client order id
         client_order_id = str(uuid.uuid4())
@@ -159,7 +163,9 @@ async def start() -> None:
     base_url = os.environ.get("COINBASE_BASE_URL", "https://api.exchange.coinbase.com")
     dry_run_env = os.environ.get("DRY_RUN", "true").lower()
     dry_run = dry_run_env not in ("false", "0", "no")
-    max_per_min = int(os.environ.get("MAX_ORDERS_PER_MINUTE", os.environ.get("MAX_REQUESTS_PER_MINUTE", "120")))
+    max_per_min = int(
+        os.environ.get("MAX_ORDERS_PER_MINUTE", os.environ.get("MAX_REQUESTS_PER_MINUTE", "120"))
+    )
     # Determine whether to use the paper trading client or live HTTP client.
     paper_env = os.environ.get("PAPER_TRADING", "true").lower()
     paper_mode = paper_env not in ("false", "0", "no") or dry_run

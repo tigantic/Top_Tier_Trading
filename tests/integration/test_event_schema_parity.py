@@ -12,21 +12,19 @@ types match between the two code paths.
 from __future__ import annotations
 
 import asyncio
-import os
 from typing import Any, Dict, List, Tuple
 
 import pytest  # type: ignore
 
-from workers.src.workers import market_data, user_channel
-
 from tests.helpers.fake_bus import FakeBus
 from tests.helpers.fake_streams import (
     DummyWebSocket,
-    raw_ws_messages,
     raw_user_messages,
+    raw_ws_messages,
     ticker_stream,
     user_update_stream,
 )
+from workers.src.workers import market_data, user_channel
 
 
 @pytest.mark.asyncio  # type: ignore
@@ -34,15 +32,19 @@ async def test_event_schema_parity(monkeypatch) -> None:
     """Events emitted from raw and SDK paths should have identical schemas and types."""
     # ---- RAW PATH ----
     bus_raw = FakeBus()
+
     # Patch websockets.connect for market data to return a dummy that yields raw ticker messages
     async def fake_md_connect(uri: str):
         return DummyWebSocket(raw_ws_messages())
+
     monkeypatch.setattr(market_data.websockets, "connect", fake_md_connect)
     # Patch the subscribe function to no‑op
     monkeypatch.setattr(market_data, "_subscribe", lambda ws, products: None)
+
     # Patch websockets.connect for user channel to return raw user messages
     async def fake_uc_connect(uri: str):
         return DummyWebSocket(raw_user_messages())
+
     monkeypatch.setattr(user_channel.websockets, "connect", fake_uc_connect)
     # Prevent JWT refresh from running timers
     monkeypatch.setattr(user_channel.JwtManager, "refresh_token", lambda self: asyncio.sleep(0))
@@ -65,24 +67,29 @@ async def test_event_schema_parity(monkeypatch) -> None:
 
     # ---- SDK PATH ----
     bus_sdk = FakeBus()
+
     # Define dummy SDK clients that mirror the offline streams
     class DummyMarketClient:
         def __init__(self, *args, **kwargs) -> None:
             self.event_bus = kwargs.get("event_bus")
+
         async def stream(self):
             async for msg in ticker_stream():
                 # Optionally publish via event bus
                 if self.event_bus is not None:
                     await self.event_bus.publish("ticker", msg)
                 yield msg
+
     class DummyUserClient:
         def __init__(self, *args, **kwargs) -> None:
             self.event_bus = kwargs.get("event_bus")
+
         async def stream(self):
             async for msg in user_update_stream():
                 if self.event_bus is not None:
                     await self.event_bus.publish("user_update", msg)
                 yield msg
+
     # Patch SDK classes on the modules
     monkeypatch.setattr(market_data, "MarketDataClient", DummyMarketClient)
     monkeypatch.setattr(user_channel, "UserChannelClient", DummyUserClient)
@@ -103,7 +110,9 @@ async def test_event_schema_parity(monkeypatch) -> None:
     events_sdk: List[Tuple[str, Dict[str, Any]]] = bus_sdk.events.copy()
 
     # Split into categories for ticker and user_update
-    def split_events(evts: List[Tuple[str, Dict[str, Any]]]) -> Dict[str, List[Dict[str, Any]]]:
+    def split_events(
+        evts: List[Tuple[str, Dict[str, Any]]],
+    ) -> Dict[str, List[Dict[str, Any]]]:
         buckets: Dict[str, List[Dict[str, Any]]] = {"ticker": [], "user_update": []}
         for etype, data in evts:
             buckets.setdefault(etype, []).append(data)

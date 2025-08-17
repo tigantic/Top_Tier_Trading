@@ -30,7 +30,7 @@ from __future__ import annotations
 
 import os
 from pathlib import Path
-from typing import Optional, Dict, Any
+from typing import Any, Dict, Optional
 
 try:
     import boto3  # type: ignore
@@ -182,8 +182,9 @@ class VaultSecretsManager(BaseSecretsManager):
         path = f"{self.prefix}/{name}" if self.prefix else name
         url = f"{addr.rstrip('/')}/v1/secret/data/{path}"
         import json
-        import urllib.request
         import urllib.error
+        import urllib.request
+
         req = urllib.request.Request(url, headers={"X-Vault-Token": token})
         try:
             with urllib.request.urlopen(req, timeout=5) as resp:

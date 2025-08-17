@@ -27,7 +27,6 @@ from __future__ import annotations
 import argparse
 import logging
 import os
-from datetime import datetime
 from typing import List, Tuple
 
 import numpy as np
@@ -36,7 +35,10 @@ import pandas as pd
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Run backtests against historical data")
-    parser.add_argument("strategy", help="Name of the strategy to backtest (only 'simple_strategy' is supported)")
+    parser.add_argument(
+        "strategy",
+        help="Name of the strategy to backtest (only 'simple_strategy' is supported)",
+    )
     parser.add_argument("data_file", help="Path to CSV file containing historical prices")
     parser.add_argument("start", help="Start timestamp (ISO 8601)")
     parser.add_argument("end", help="End timestamp (ISO 8601)")
@@ -68,7 +70,9 @@ def load_price_series(data_file: str, start: str, end: str) -> pd.Series:
     return series
 
 
-def run_momentum_backtest(price_series: pd.Series) -> Tuple[float, List[float], List[float]]:
+def run_momentum_backtest(
+    price_series: pd.Series,
+) -> Tuple[float, List[float], List[float]]:
     """Execute a naive momentum strategy over a price series.
 
     The strategy buys when the price increases by more than the threshold
@@ -169,6 +173,7 @@ def compute_max_drawdown(equity_curve: List[float]) -> float:
     peak = np.maximum.accumulate(cum)
     drawdown = peak - cum
     return float(drawdown.max())
+
 
 def compute_win_rate(returns: List[float]) -> float:
     """Compute the proportion of winning trades.

@@ -34,10 +34,16 @@ async def start() -> None:
     except Exception as exc:
         logger.warning("Failed to start Prometheus server on port %d: %s", port, exc)
     # Define gauges
-    exposure_gauge = Gauge("atlas_exposure", "Exposure per product in quote currency", labelnames=["product"])
+    exposure_gauge = Gauge(
+        "atlas_exposure",
+        "Exposure per product in quote currency",
+        labelnames=["product"],
+    )
     open_orders_gauge = Gauge("atlas_open_orders", "Current number of open orders")
     kill_switch_gauge = Gauge("atlas_kill_switch", "Kill switch status (1=on,0=off)")
-    price_gauge = Gauge("atlas_last_price", "Last observed price per product", labelnames=["product"])
+    price_gauge = Gauge(
+        "atlas_last_price", "Last observed price per product", labelnames=["product"]
+    )
     logger.info("Telemetry collector started on port %d", port)
     while True:
         # Update exposure and open order metrics

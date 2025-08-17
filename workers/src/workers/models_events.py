@@ -16,7 +16,7 @@ required keys are missing.
 
 from __future__ import annotations
 
-from typing import Any, TypedDict, Optional
+from typing import Any, TypedDict
 
 
 class TickerEvent(TypedDict):

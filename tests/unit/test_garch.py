@@ -81,7 +81,6 @@ def test_forecast_volatility_non_negative_non_nan() -> None:
         assert v == v  # check not NaN
 
 
-
 def test_forecast_volatility_invalid_horizon_raises() -> None:
     """forecast_volatility should raise ValueError on invalid inputs."""
     params = {"omega": 1e-6, "alpha": 0.1, "beta": 0.8}

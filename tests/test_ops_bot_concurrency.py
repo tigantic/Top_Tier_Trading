@@ -10,22 +10,24 @@ messages.
 import asyncio
 import time
 
-import pytest  # type: ignore
-
 
 async def test_deduplication_logic(monkeypatch):
     # Simulate the deduplication sets and send logic by capturing texts
     sent_texts = []
+
     async def fake_chat_postMessage(channel: str, text: str):  # noqa: D401
         sent_texts.append(text)
+
     # Patch the Slack client's chat_postMessage method
     class DummyClient:
         async def chat_postMessage(self, channel: str, text: str):
             await fake_chat_postMessage(channel, text)
+
     # Set up dedup structures similar to ops_bot_async.redis_listener
     recent_alerts = set()
     alert_times = {}
     expiry = 1.0
+
     async def send_alert(text: str):
         nonlocal recent_alerts, alert_times
         now = time.time()
@@ -39,6 +41,7 @@ async def test_deduplication_logic(monkeypatch):
             await fake_chat_postMessage("channel", text)
             recent_alerts.add(text)
             alert_times[text] = now
+
     # Send same text twice quickly; second should be deduped
     await send_alert("test message")
     await send_alert("test message")

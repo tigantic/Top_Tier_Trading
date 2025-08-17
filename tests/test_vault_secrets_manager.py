@@ -4,8 +4,6 @@ This test verifies that when Vault is not configured the
 VaultSecretsManager falls back to reading from environment variables.
 """
 
-import os
-
 from workers.src.workers.secrets_manager import VaultSecretsManager
 
 

@@ -11,9 +11,9 @@ variables.
 
 import asyncio
 import importlib
-import os
 
 import pytest  # type: ignore
+
 
 @pytest.mark.asyncio  # type: ignore
 async def test_sdk_integration_harness_imports():

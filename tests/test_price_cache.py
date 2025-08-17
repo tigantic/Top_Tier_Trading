@@ -1,9 +1,9 @@
 """Tests for the PriceCache service."""
 
-import pytest
-import sys
 import os
-import asyncio
+import sys
+
+import pytest
 
 # Adjust sys.path so that tests can import the workers modules without installing the package.
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "workers", "src")))

@@ -5,8 +5,6 @@ supports uniform sampling without replacement and reports its length
 accurately.
 """
 
-import random
-
 from workers.src.workers.rl.replay_buffer import ReplayBuffer
 
 

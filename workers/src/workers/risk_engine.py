@@ -12,11 +12,10 @@ and triggers a kill switch when a daily loss limit is exceeded.
 from __future__ import annotations
 
 import asyncio
-import collections
 import logging
 import os
 import time
-from collections import deque, defaultdict
+from collections import defaultdict, deque
 from dataclasses import dataclass
 from typing import Dict
 
@@ -79,23 +78,39 @@ class RiskEngine:
             return False
         # Allowed market
         if order.product_id not in self.allowed_markets:
-            logger.warning("Market %s not in allowed list %s", order.product_id, self.allowed_markets)
+            logger.warning(
+                "Market %s not in allowed list %s",
+                order.product_id,
+                self.allowed_markets,
+            )
             return False
         # Notional check
         notional = order.size * order.price
         if notional > self.max_order_notional:
-            logger.warning("Order notional %.2f exceeds limit %.2f", notional, self.max_order_notional)
+            logger.warning(
+                "Order notional %.2f exceeds limit %.2f",
+                notional,
+                self.max_order_notional,
+            )
             return False
         # Orders per minute check
         now = time.time()
         while self.order_times and now - self.order_times[0] > 60:
             self.order_times.popleft()
         if len(self.order_times) >= self.max_orders_per_minute:
-            logger.warning("Rate limit: %d orders in the last minute (max %d)", len(self.order_times), self.max_orders_per_minute)
+            logger.warning(
+                "Rate limit: %d orders in the last minute (max %d)",
+                len(self.order_times),
+                self.max_orders_per_minute,
+            )
             return False
         # Open orders count
         if self.open_orders >= self.max_open_orders:
-            logger.warning("Max open orders reached (%d >= %d)", self.open_orders, self.max_open_orders)
+            logger.warning(
+                "Max open orders reached (%d >= %d)",
+                self.open_orders,
+                self.max_open_orders,
+            )
             return False
         # Price band check
         if reference_price:
@@ -120,7 +135,7 @@ class RiskEngine:
         self.order_times.append(now)
         self.open_orders += 1
         notional = order.size * order.price
-        sign = 1.0 if order.side.lower() == 'buy' else -1.0
+        sign = 1.0 if order.side.lower() == "buy" else -1.0
         self.exposure[order.product_id] += sign * notional
 
     def settle_order(self) -> None:
@@ -133,7 +148,9 @@ class RiskEngine:
         self.pnl += realized_pnl
         if self.pnl < -self.daily_max_loss:
             logger.error(
-                "Daily loss %.2f exceeds limit %.2f — activating kill switch", -self.pnl, self.daily_max_loss
+                "Daily loss %.2f exceeds limit %.2f — activating kill switch",
+                -self.pnl,
+                self.daily_max_loss,
             )
             self.kill_switch = True
 

@@ -6,9 +6,8 @@ return anything.  They do not exercise message sending or the event
 loop, as those require integration tests with Slack or Teams.
 """
 
-import os
-import sys
 import asyncio
+import sys
 
 import pytest  # type: ignore
 

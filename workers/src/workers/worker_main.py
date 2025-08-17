@@ -15,14 +15,14 @@ import logging
 import os
 
 from . import (
-    start_market_data,
-    start_risk_engine,
     start_execution,
+    start_market_data,
     start_portfolio,
-    start_telemetry,
-    start_user_channel,
+    start_risk_engine,
     # strategy import
     start_simple_strategy,
+    start_telemetry,
+    start_user_channel,
 )
 
 
