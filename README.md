@@ -1,3 +1,13 @@
+# Top Tier Trading
+
+![CI Status](…existing badge URL…)
+![Python Versions](…existing badge URL…)
+![License](…existing badge URL…)
+![Coverage](…existing badge URL…)
+
+> _Maintenance:_ Agent sanity check PR to verify CI triggers/permissions & repo write access. No functional changes.
+
+
 ## Crypto Trading Platform
 
 ![CI Status](https://img.shields.io/badge/ci-passing-brightgreen.svg)
