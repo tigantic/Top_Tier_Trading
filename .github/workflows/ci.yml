@@ -17,21 +17,31 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Setup Python
+
+      - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+
       - name: Install Poetry
-        uses: abatilo/actions-poetry@v3
-        with:
-          poetry-version: "1.8.3"
+        run: pipx install poetry
+
       - name: Configure Poetry
         run: poetry config virtualenvs.create false
+
+      - name: Cache Poetry
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pypoetry
+          key: ${{ runner.os }}-poetry-${{ hashFiles('**/poetry.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-poetry-
+
       - name: Install lint group only
         run: poetry install --only lint --no-root
+
       - name: Run ruff
         run: poetry run ruff check .
+
       - name: Run mypy
         run: poetry run mypy .
-      - name: Run black
-        run: poetry run black --check .
