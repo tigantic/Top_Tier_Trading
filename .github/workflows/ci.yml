@@ -23,10 +23,12 @@ jobs:
           python-version: "3.12"
       - name: Install Poetry
         uses: abatilo/actions-poetry@v3
+        with:
+          poetry-version: "1.8.3"
       - name: Configure Poetry
         run: poetry config virtualenvs.create false
       - name: Install lint group only
-        run: poetry install --only lint
+        run: poetry install --only lint --no-root
       - name: Run ruff
         run: poetry run ruff check .
       - name: Run mypy
