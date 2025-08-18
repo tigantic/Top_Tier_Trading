@@ -1,0 +1,99 @@
+{
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "spdxVersion": "SPDX-2.2",
+  "name": "Top_Tier_Trading",
+  "versionInfo": "1.1.0-rc.1",
+  "dataLicense": "CC0-1.0",
+  "documentNamespace": "https://example.com/spdxdocs/top-tier-trading-1.1.0-rc.1",
+  "creationInfo": {
+    "created": "2025-08-17T00:00:00Z",
+    "creators": ["Person: Brad <brad@example.com>", "Tool: SBOM-Generator v0.1"]
+  },
+  "packages": [
+    {
+      "name": "express",
+      "SPDXID": "SPDXRef-Package-express",
+      "versionInfo": "4.18.2",
+      "downloadLocation": "NOASSERTION",
+      "supplier": "Organization: npm",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:npm/express@4.18.2"
+        }
+      ]
+    },
+    {
+      "name": "redis",
+      "SPDXID": "SPDXRef-Package-redis-js",
+      "versionInfo": "4.6.7",
+      "supplier": "Organization: npm",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:npm/redis@4.6.7"
+        }
+      ]
+    },
+    {
+      "name": "next",
+      "SPDXID": "SPDXRef-Package-next",
+      "versionInfo": "14.0.0",
+      "supplier": "Organization: npm",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:npm/next@14.0.0"
+        }
+      ]
+    },
+    {
+      "name": "react",
+      "SPDXID": "SPDXRef-Package-react",
+      "versionInfo": "18.2.0",
+      "supplier": "Organization: npm",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:npm/react@18.2.0"
+        }
+      ]
+    },
+    {
+      "name": "redis-py",
+      "SPDXID": "SPDXRef-Package-redis-py",
+      "versionInfo": "4.6.0",
+      "supplier": "Organization: PyPI",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:pypi/redis@4.6.0"
+        }
+      ]
+    },
+    {
+      "name": "aio-pika",
+      "SPDXID": "SPDXRef-Package-aio-pika",
+      "versionInfo": "9.0.0",
+      "supplier": "Organization: PyPI",
+      "downloadLocation": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE_MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:pypi/aio-pika@9.0.0"
+        }
+      ]
+    }
+  ],
+  "relationships": []
+}

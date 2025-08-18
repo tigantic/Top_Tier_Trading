@@ -1,0 +1,19 @@
+{
+  "name": "Top_Tier_Trading",
+  "version": "1.1.0-rc.1",
+  "files": [
+    "dist/placeholder.txt",
+    "README.md",
+    "RELEASE_NOTES.md",
+    "UPGRADE_AND_ROLLBACK.md",
+    "TEST_REPORT.md",
+    "OBSERVABILITY.md",
+    "RUN.sh",
+    "RUN.ps1",
+    "config/.env.example",
+    "SECRETS_AUDIT.md",
+    "k8s/secrets-example.yaml",
+    "artifact_manifest.json",
+    "SBOM.spdx.json"
+  ]
+}
